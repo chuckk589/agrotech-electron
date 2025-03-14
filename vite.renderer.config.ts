@@ -21,13 +21,13 @@ export default defineConfig((env) => {
     resolve: {
       preserveSymlinks: true,
     },
-    css: {
-      preprocessorOptions: {
-        scss: {
-          additionalData: `@use  "src/styles/_variables.scss" as *;`,
-        }
-      }
-    },
+    // css: {
+    //   preprocessorOptions: {
+    //     scss: {
+    //       additionalData: `@use  "src/styles/_variables.scss" as *;`,
+    //     }
+    //   }
+    // },
     clearScreen: false,
   } as UserConfig;
 });

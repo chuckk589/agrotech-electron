@@ -1,6 +1,6 @@
 // Styles
 import '@mdi/font/css/materialdesignicons.css';
-import 'vuetify/dist/vuetify.min.css'
+import 'vuetify/dist/vuetify.min.css';
 
 // Vuetify
 import { createVuetify } from 'vuetify';
@@ -17,5 +17,17 @@ export default createVuetify({
             density: 'compact'
         },
     },
+    moduleOptions: {
+        styles: { configFile: '/styles/variables.css' }
+      },
+    theme: {
+        themes: {
+          light: {
+            colors: {
+            //   primary: "#E53935", // #E53935
+            //   info:  "#E53935", 
+            }
+          },
+        },
+      },
 });
-// https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides

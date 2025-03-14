@@ -1,5 +1,5 @@
 <template>
-  <div class="at-products-container">
+  <div class="at-myproducts-container">
     <ProductCard v-for="product in products" :key="product.name" :product="product" />
   </div>
 </template>
@@ -9,7 +9,7 @@ import { Product } from '@/types';
 import { ref } from 'vue';
 import ProductCard from '../components/ProductCard.vue';
 
-const actions = ['Активировать продукт', 'Демо 5 дней', 'Скачать бесплатно'];
+const actions = ['Старт', "Установить"];
 const names = ['AgroTechSim PRO', 'DroneVerse', 'RoboLab', 'DroneVerse Desktop', 'AgroTechSim Manual'];
 
 const products = ref(names.map((name): Product => {
@@ -46,16 +46,11 @@ const products = ref(names.map((name): Product => {
 </script>
 
 <style>
-.at-products-container {
+.at-myproducts-container{
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
 
 }
 
-.at-products-container .at-product-card:first-child {
-  flex-basis: 100%;
-  max-width: unset;
-  height: 380px;
-}
 </style>

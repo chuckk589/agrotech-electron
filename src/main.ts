@@ -1,5 +1,6 @@
 import { app, BrowserWindow } from 'electron';
 import contextMenu from 'electron-context-menu';
+import started from "electron-squirrel-startup";
 import path from 'path';
 
 contextMenu({
@@ -7,7 +8,7 @@ contextMenu({
 });
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
-if (require('electron-squirrel-startup')) {
+if (started) {
   app.quit();
 }
 
