@@ -1,16 +1,16 @@
 import { app, BrowserWindow } from 'electron';
 import contextMenu from 'electron-context-menu';
-import started from "electron-squirrel-startup";
+import squirrel from 'electron-squirrel-startup';
 import path from 'path';
 
-contextMenu({
-	showSaveImageAs: true
-});
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
-if (started) {
+if (squirrel) {
   app.quit();
 }
+contextMenu({
+  showSaveImageAs: true
+});
 
 const createWindow = () => {
   // Create the browser window.
@@ -23,17 +23,19 @@ const createWindow = () => {
       nodeIntegration: true,
       webSecurity: false
     },
+    show: false,
   });
 
   // and load the index.html of the app.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
+    // Open the DevTools.
+    mainWindow.webContents.openDevTools();
   } else {
     mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
   }
-
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  mainWindow.maximize()
+  mainWindow.show()
 };
 
 // This method will be called when Electron has finished

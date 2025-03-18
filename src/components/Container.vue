@@ -11,15 +11,15 @@
           <v-list-item-title>Мои продукты</v-list-item-title>
         </v-list-item>
 
-        <v-list-item to="/main/prcoducssts" value="3" disabled>
+        <v-list-item to="/main/news" value="3" >
           <v-list-item-title>Новости</v-list-item-title>
         </v-list-item>
 
-        <v-list-item to="/main/producvvts" value="4" disabled>
+        <v-list-item to="/main/codes" value="4">
           <v-list-item-title>Активация кода</v-list-item-title>
         </v-list-item>
 
-        <v-list-item to="/main/productsa" value="5" disabled>
+        <v-list-item to="/main/help" value="5" >
           <v-list-item-title>Помощь</v-list-item-title>
         </v-list-item>
       </v-list>
@@ -44,11 +44,13 @@ import logo from '../assets/logo.svg';
 
 const online = ref(false)
 
-onMounted(() => {
-  const http = new XMLHttpRequest();
-  http.open('HEAD', 'https://www.google.com', false);
-  http.send();
-  online.value = http.status < 400;
+onMounted(async () => {
+  try {
+    await fetch('https://www.google.com', { mode: 'no-cors' });
+    online.value = true; 
+  } catch (error) {
+    online.value = false;
+  }
 });
 
 </script>
@@ -83,11 +85,13 @@ onMounted(() => {
   margin-right: 2px;
   border-radius: 50%;
 }
+
 .at-offline-dot {
   border: 5px solid #FF0000;
   margin-right: 2px;
   border-radius: 50%;
 }
+
 .at-menu-text {
   font-style: normal;
   font-weight: 500;

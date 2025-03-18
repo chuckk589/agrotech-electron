@@ -48,8 +48,8 @@
                     <div v-for="sys_info in product.sys_info" :key="sys_info">{{ sys_info }}</div>
                   </v-card-text>
                   <v-card-text class="at-product-links">
-                    <a :href="temp_vk">vk</a>
-                    <a :href="temp_telegram">telegram</a>
+                    <a href="#">vk</a>
+                    <a href="#">telegram</a>
                   </v-card-text>
                 </v-col>
                 <v-col>
@@ -89,12 +89,12 @@
             </v-container>
           </v-tabs-window-item>
           <v-tabs-window-item :value="2">
-            <div class="at-news-container">
+            <div class="at-news-block">
               <NewsCard v-for="news in news" :key="news.title" :news="news" />
             </div>
           </v-tabs-window-item>
           <v-tabs-window-item :value="3">
-            <div class ="at-manual-container">
+            <div class ="at-manual-block">
               <ManualCard v-for="manual in manuals" :key="manual" :manual="manual" />
             </div>
           </v-tabs-window-item>
@@ -106,7 +106,7 @@
 
 <script setup lang="ts">
 import { Product } from '@/types';
-import { computed, onMounted, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import ManualCard from '../components/ManualCard.vue';
 import NewsCard from '../components/NewsCard.vue';
@@ -118,8 +118,8 @@ const loading = ref(false);
 const tab = ref(1);
 const tab_spec = ref(1);
 
-const temp_vk = 'vk.com';
-const temp_telegram = 'telegram.com';
+// const temp_vk = 'vk.com';
+// const temp_telegram = 'telegram.com';
 
 const currentPatchNotes = computed(() => {
   return product.patch_notes.find(patch => patch.version == product.version)?.notes;
@@ -137,9 +137,7 @@ const news = [{
 }]
 
 const manuals = ["О симуляторе", "Калибровка пульта", "Режим мультиплеера", "Режим удаленного наблюдения", "Режим приложения", "Общая инструкция"]
-onMounted(() => {
-  console.log(product)
-});
+
 </script>
 
 <style>
@@ -203,7 +201,7 @@ onMounted(() => {
   height: 364px;
 }
 
-.at-news-container {
+.at-news-block {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;

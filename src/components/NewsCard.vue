@@ -1,5 +1,5 @@
 <template>
-    <v-card variant="flat" class="at-news-card" >
+    <v-card variant="flat" class="at-news-card" :to="{ name: 'news-view', query: { news: JSON.stringify(news) } }">
         <v-card-text></v-card-text>
         <v-card-actions>{{ news.title }}</v-card-actions>
     </v-card>

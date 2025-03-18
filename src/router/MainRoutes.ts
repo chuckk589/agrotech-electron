@@ -17,6 +17,26 @@ const MainRoutes = {
       path: '/main/my-products',
       name: 'my-products',
       component: () => import('../views/MyProducts.vue'),
+    },
+    {
+      path: '/main/news',
+      name: 'news',
+      component: () => import('../views/News.vue'),
+    },
+    {
+      path: '/main/news-view/',
+      name: 'news-view',
+      component: () => import('../views/NewsView.vue'),
+    },
+    {
+      path: '/main/codes/',
+      name: 'codes',
+      component: () => import('../views/Codes.vue'),
+    },
+    {
+      path: '/main/help/',
+      name: 'help',
+      component: () => import('../views/Help.vue'),
     }
   ],
 };

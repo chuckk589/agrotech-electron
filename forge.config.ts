@@ -10,7 +10,7 @@ import { FuseV1Options, FuseVersion } from '@electron/fuses';
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
-    name: 'AgroTech Launcher',
+    name: 'AgroTechLauncher'
   },
   rebuildConfig: {},
   makers: [new MakerSquirrel({}), new MakerZIP({}, ['darwin']), new MakerRpm({}), new MakerDeb({})],
