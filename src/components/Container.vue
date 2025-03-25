@@ -11,7 +11,7 @@
           <v-list-item-title>Мои продукты</v-list-item-title>
         </v-list-item>
 
-        <v-list-item to="/main/news" value="3" >
+        <v-list-item to="/main/news" value="3">
           <v-list-item-title>Новости</v-list-item-title>
         </v-list-item>
 
@@ -19,7 +19,7 @@
           <v-list-item-title>Активация кода</v-list-item-title>
         </v-list-item>
 
-        <v-list-item to="/main/help" value="5" >
+        <v-list-item to="/main/help" value="5">
           <v-list-item-title>Помощь</v-list-item-title>
         </v-list-item>
       </v-list>
@@ -31,6 +31,12 @@
     </v-navigation-drawer>
 
     <v-main>
+      <!-- <v-alert v-show="errorStore.active" :text="errorStore.error" type="error" icon="" closable @click:close=""></v-alert> -->
+      <v-snackbar location="top" v-model="errorStore.active" :text="errorStore.error" color="error">
+        <template v-slot:actions>
+          <v-btn color="blue" variant="text" @click="errorStore.clearError"> Close </v-btn>
+        </template>
+      </v-snackbar>
       <v-container fluid>
         <router-view />
       </v-container>
@@ -38,19 +44,22 @@
   </v-app>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import { useErrorStore } from '@/stores/error';
 import { onMounted, ref } from 'vue';
 import logo from '../assets/logo.svg';
 
 const online = ref(false)
+const errorStore = useErrorStore();
 
 onMounted(async () => {
   try {
     await fetch('https://www.google.com', { mode: 'no-cors' });
-    online.value = true; 
+    online.value = true;
   } catch (error) {
     online.value = false;
   }
+
 });
 
 </script>

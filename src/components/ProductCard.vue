@@ -1,19 +1,20 @@
 <template>
-    <v-card variant="flat" class="at-product-card" :to="{ name: 'product', query: { product: JSON.stringify(product) } }">
-        <v-card-title>{{ product.name }}</v-card-title>
+    <v-card variant="flat" class="at-product-card"
+        :to="{ name: 'product', query: { product_id: product.id } }">
+        <v-card-title>{{ product.label }}</v-card-title>
         <v-card-text>{{ product.description }}</v-card-text>
         <v-card-actions>
-            <v-btn variant="tonal">{{ product.action }}</v-btn>
+            <v-btn variant="tonal">action</v-btn>
         </v-card-actions>
     </v-card>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import { RetrieveSimulatorDto } from '../../../agrotech-back/shared';
 
-//props
-const props = defineProps({
-    product: Object
-});
+defineProps<{
+    product: RetrieveSimulatorDto;
+}>();
 
 
 </script>

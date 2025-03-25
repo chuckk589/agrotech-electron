@@ -1,9 +1,10 @@
+import axios from 'axios';
 import { app, BrowserWindow } from 'electron';
 import contextMenu from 'electron-context-menu';
 import squirrel from 'electron-squirrel-startup';
 import path from 'path';
 
-
+let mainWindow: BrowserWindow | null = null;
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (squirrel) {
   app.quit();
@@ -14,14 +15,16 @@ contextMenu({
 
 const createWindow = () => {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  const a = axios.get('http://localhost:3000');
+  mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
-      // preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, 'preload.js'),
       // preload: path.join(__dirname, '../../dist/main.js'),
       nodeIntegration: true,
-      webSecurity: false
+      webSecurity: false,
+      // contextIsolation: false
     },
     show: false,
   });
@@ -59,7 +62,95 @@ app.on('activate', () => {
     createWindow();
   }
 });
-
-
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
+
+// let versionManager = new VersionManager();
+
+// versionManager.onDownloadProgress = ((progressDetails: { bytesLeft: number, rate: number }) => {
+//   if (mainWindow) {
+//     mainWindow.webContents.send('download-progress', progressDetails);
+//   }
+// });
+// versionManager.onStatusChange = ((options: ProductDetails, status: string) => {
+//   if (mainWindow) {
+//     mainWindow.webContents.send('status-change', options, status);
+//   }
+// });
+
+// safeIpcHandle('get-version-state', async (_, { options, expectedSizeBytes }: { options: ProductDetails, expectedSizeBytes: number }) => {
+//   return versionManager.getProductVersionState(options, expectedSizeBytes);
+// });
+
+// safeIpcHandle('new-product-download', async (_, { options }: { options: ProductDetails }) => {
+//   return versionManager.startProductVersionDownload(options);
+// });
+
+// safeIpcHandle('get-version-manager-state', async () => {
+//   return versionManager.getVersionManagerState();
+// });
+
+// safeIpcHandle('cancel-download', async (_, { fullVersion }) => {
+//   return versionManager.resetDownload(fullVersion);
+// })
+
+// safeIpcHandle('pause-download', async () => {
+//   return versionManager.pauseDownload();
+// })
+
+// safeIpcHandle('resume-download', async () => {
+//   return versionManager.resumeDownload();
+// })
+
+// safeIpcHandle('install-product', async (_, { options }: { options: ProductDetails }) => {
+//   return versionManager.startProductVersionInstall(options);
+// })
+// safeIpcHandle('start-product-export', async (_, { options, fullPath }: { options: ProductDetails, fullPath: string }) => {
+//   return versionManager.startProductVersionExport(options, fullPath);
+// });
+// safeIpcHandle('start-product-import', async (_, { productName, fullPath }) => {
+//   return versionManager.startProductVersionImport(productName, fullPath);
+// })
+
+// safeIpcHandle('uninstall-product', async (_, { options }: { options: ProductDetails }) => {
+//   return versionManager.startProductVersionUninstall(options);
+// });
+
+// safeIpcHandle('get-installed-versions', async (_) => {
+//   return versionManager.getInstalledProducts();
+// });
+// safeIpcHandle('launch-product', async (_, { options }: { options: ProductDetails }) => {
+//   return versionManager.launchProductVersion(options);
+// });
+// //filesystem
+// safeIpcHandle('open-directory-dialog', async (_, type: string) => {
+//   const filters: FileFilter[] = [];
+//   let title = '';
+//   if (type == 'openFile') {
+//     filters.push({ name: 'All Files', extensions: ['zip'] });
+//     title = 'Select a file to import';
+//   }
+//   const result = await dialog.showOpenDialog({
+//     properties: [type as any],
+//     title,
+//     filters
+//   });
+
+//   if (!result.canceled) {
+//     return result.filePaths[0];
+//   }
+//   return null;
+// });
+
+
+// function safeIpcHandle(channel: string, listener: (event: Electron.IpcMainInvokeEvent, ...args: any[]) => Promise<any>) {
+//   ipcMain.handle(channel, async (event, ...args) => {
+//     try {
+//       return await listener(event, ...args);
+//     } catch (e) {
+//       if (mainWindow) {
+//         mainWindow.webContents.send('error', e);
+//       }
+//     }
+//   });
+// }

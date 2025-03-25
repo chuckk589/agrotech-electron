@@ -1,20 +1,24 @@
 <template>
     <v-card variant="flat" class="at-manual-card">
         <v-card-text>
-            <div>{{ manual }}</div>
-            <div> <a href="#">Скачать PDF</a> </div>
+            <div>{{ manual.manualName }}</div>
+            <div> <a :href="manual.manualRef">Скачать PDF</a> </div>
         </v-card-text>
     </v-card>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import { RetrieveManualDto } from '../../../agrotech-back/shared';
+
 
 //props
-const props = defineProps({
-    manual: String
-});
+// const props = defineProps({
+//     manual: RetrieveManualDto
+// });
 
-
+const props = defineProps<{
+    manual: RetrieveManualDto
+}>();
 </script>
 <style>
 .at-manual-card {

@@ -2,32 +2,38 @@
   <div>
     <div class="at-app-bar">
       <v-btn variant="tonal" @click="$router.go(-1)">back</v-btn>
-      <v-btn variant="tonal">import</v-btn>
-      <v-btn variant="tonal">export</v-btn>
+      <v-btn variant="tonal" @click="selectImported">import</v-btn>
+      <v-btn :disabled="!versionStore.isInstalled" variant="tonal" @click="selectDirectory">export</v-btn>
       <v-menu location="bottom">
         <template v-slot:activator="{ props }">
           <v-btn v-bind="props" variant="tonal">
-            {{ product.version }}
+            {{ currentVersion.versionStr }}
           </v-btn>
         </template>
 
-        <v-list v-for="version in product.versions" :key="version">
-          <v-list-item>
-            <v-list-item-title>{{ version }}</v-list-item-title>
+        <v-list @update:selected="switchVersion">
+          <v-list-item v-for="version in versionList" :key="version.id" :value="version.id">
+            <v-list-item-title>{{ version.versionStr }}</v-list-item-title>
           </v-list-item>
         </v-list>
       </v-menu>
     </div>
-
+    <div class="at-product-update" v-if="!isLastVersion">
+      <v-row>
+        Доступна новая версия продукта {{ latestVersion }}
+        <v-btn @click="installLatest">Обновить продукт</v-btn>
+      </v-row>
+    </div>
     <div class="at-product-container">
       <div class="at-product-header">
         <v-row>
           <v-col>
-            <div>{{ product.name }}</div>
-            <div>Версия {{ product.version }}</div>
-            <v-btn :loading="loading" variant="tonal">Action</v-btn>
+            <div>{{ product.label }}</div>
+            <div>Версия {{ currentVersion.versionStr }}</div>
+            <ProductActionComponent :label="product.label" :version="currentVersion"></ProductActionComponent>
           </v-col>
         </v-row>
+        <v-btn v-if="versionStore.isInstalled" class="mb-2" icon="mdi-play" @click="versionStore.launch(product.label, currentVersion.fullName)"></v-btn>
       </div>
       <div>
         <v-tabs v-model="tab" align-tabs="start">
@@ -42,10 +48,10 @@
               <v-row>
                 <v-col>
                   <v-card-text>
-                    {{ product.info }}
+                    {{ product.description }}
                   </v-card-text>
                   <v-card-text class="at-product-info">
-                    <div v-for="sys_info in product.sys_info" :key="sys_info">{{ sys_info }}</div>
+                    <div v-for="sys_info in sys_info" :key="sys_info">{{ sys_info }}</div>
                   </v-card-text>
                   <v-card-text class="at-product-links">
                     <a href="#">vk</a>
@@ -56,22 +62,23 @@
                   <v-card class="at-product-specs h-100">
                     <v-tabs v-model="tab_spec" align-tabs="start">
                       <v-tab :value="1">Системные требования</v-tab>
-                      <v-tab :value="2">Что нового в версии {{ product.version }}</v-tab>
+                      <v-tab :value="2">Что нового в версии {{ currentVersion.versionStr }}</v-tab>
                     </v-tabs>
                     <v-tabs-window v-model="tab_spec">
                       <v-tabs-window-item :value="1">
                         <v-card>
                           <v-card-text>Системные требования (для большинства современных игр):</v-card-text>
                           <v-card-text class="at-product-sysreq">
-                            <ul>
-                              <li v-for="sys_req in product.sys_req" :key="sys_req">{{ sys_req }}</li>
-                            </ul>
+                            <!-- <ul>
+                              <li v-for="sys_req in currentVersion.sys_req" :key="sys_req">{{ sys_req }}</li>
+                            </ul> -->
+                            {{ currentVersion.sys_req }}
                           </v-card-text>
                         </v-card>
                       </v-tabs-window-item>
                       <v-tabs-window-item :value="2">
                         <v-card-text>
-                          {{ currentPatchNotes }}
+                          {{ currentVersion.patchNote }}
                         </v-card-text>
                       </v-tabs-window-item>
                     </v-tabs-window>
@@ -81,7 +88,7 @@
               <v-row>
                 <div>Фото продукта</div>
                 <v-slide-group show-arrows class="at-product-slider">
-                  <v-slide-group-item v-for="photo in product.photos" :key="photo">
+                  <v-slide-group-item v-for="photo in images" :key="photo">
                     <img :src="photo" alt="product">
                   </v-slide-group-item>
                 </v-slide-group>
@@ -94,37 +101,77 @@
             </div>
           </v-tabs-window-item>
           <v-tabs-window-item :value="3">
-            <div class ="at-manual-block">
-              <ManualCard v-for="manual in manuals" :key="manual" :manual="manual" />
+            <div class="at-manual-block">
+              <ManualCard v-for="manual in currentVersion.manuals" :key="manual.id" :manual="manual" />
             </div>
           </v-tabs-window-item>
         </v-tabs-window>
       </div>
     </div>
+
   </div>
 </template>
 
 <script setup lang="ts">
-import { Product } from '@/types';
-import { computed, ref } from 'vue';
+import { useApiStore } from '@/stores/api';
+import { computed, onMounted, Ref, ref } from 'vue';
 import { useRoute } from 'vue-router';
+import { RetrieveSimulatorDto, RetrieveVersionDto } from '../../../agrotech-back/shared';
 import ManualCard from '../components/ManualCard.vue';
 import NewsCard from '../components/NewsCard.vue';
 
+import { useVersionStore } from '@/stores/version';
+import ProductActionComponent from '../components/ProductActionComponent.vue';
+//@ts-ignore
+const API_URL = import.meta.env.VITE_API_URL;
 const route = useRoute();
-const product: Product = JSON.parse((route.query.product || '{}') as string);
+const apiStore = useApiStore();
+const versionStore = useVersionStore();
 
-const loading = ref(false);
+//@ts-ignore
+const product: Ref<RetrieveSimulatorDto> = ref({
+  id: 0,
+  label: 'string',
+  firstName: 'string',
+  secondName: 'string',
+  description: 'string',
+  productKey: 1,
+  productNumber: 1,
+  icon: 'string',
+  mainImage: 'string',
+  isFree: true,
+  eduSim: true,
+  versions: [{
+    id: 0,
+    versionStr: 'string',
+    manuals: []
+  }],
+  images: [],
+});
+
 const tab = ref(1);
 const tab_spec = ref(1);
 
-// const temp_vk = 'vk.com';
-// const temp_telegram = 'telegram.com';
+const product_id = +route.query.product_id;
+const currentVersionIdx = ref(0);
+const latestVersion = computed(() => product.value.versions[product.value.versions.length - 1].versionStr);
 
-const currentPatchNotes = computed(() => {
-  return product.patch_notes.find(patch => patch.version == product.version)?.notes;
-});
+// const versionList: ComputedRef<RetrieveVersionDto[]> = computed(() => product.value.versions.filter((version) => version.id != currentVersionIdx.value));
+// const currentVersion: ComputedRef<RetrieveVersionDto> = computed(() => product.value.versions.find((version) => version.id == currentVersionIdx.value));
+const versionList = ref<RetrieveVersionDto[]>([]);
+const currentVersion = ref<RetrieveVersionDto>({} as any);
 
+
+const images = computed(() => product.value.images.map((image) => new URL(image, API_URL).href));
+//FIXME:
+const isLastVersion = computed(() => currentVersionIdx.value != product.value.versions.length - 1);
+//temp values
+const sys_info = [
+  "Размер  приложения: 3.5 ГБ.",
+  "Последний запуск: 12.10.2023, 15:30.",
+  "Дата оканчания лицензии: 31.12.2023, бессрочная.",
+  "Тип лицензии: индивидуальная"
+]
 const news = [{
   title: "Вышла новая версия",
   description: "Описание новой версии"
@@ -136,8 +183,45 @@ const news = [{
   description: "Описание новой версии"
 }]
 
-const manuals = ["О симуляторе", "Калибровка пульта", "Режим мультиплеера", "Режим удаленного наблюдения", "Режим приложения", "Общая инструкция"]
+onMounted(async () => {
+  const entry = apiStore.products.find(product => product.id == product_id);
+  if (entry) {
+    product.value = entry;
+    await switchVersion(product.value.versions[0].id);
+  }
+});
+//FIXME:
+const installLatest = async () => {
+  await switchVersion(product.value.versions[product.value.versions.length - 1].id);
+  await versionStore.action(product.value.label, currentVersion.value.fullName);
+}
 
+const switchVersion = async (id: number) => {
+  const version = product.value.versions.find((version) => version.id == id);
+  if (version) {
+    currentVersion.value = version;
+    currentVersionIdx.value = id;
+    versionList.value = product.value.versions.filter((version) => version.id != id);
+    await versionStore.refreshVersionState({productName: product.value.label, fullVersion: version.fullName});
+    console.log(versionStore.managerState, versionStore.productState, versionStore.productMeta);
+  }
+}
+
+//export / import 
+const selectDirectory = async () => {
+  const selectedPath = await window.filesystem.openDirectoryDialog('openDirectory');
+  if (selectedPath) {
+    console.log(selectedPath);
+    await versionStore.startExport(product.value.label, currentVersion.value.fullName, selectedPath);
+  }
+};
+
+const selectImported = async () => {
+  const selectedPath = await window.filesystem.openDirectoryDialog('openFile');
+  if (selectedPath) {
+    await versionStore.startImport(product.value.label, selectedPath);
+  }
+};
 </script>
 
 <style>
@@ -158,7 +242,7 @@ const manuals = ["О симуляторе", "Калибровка пульта",
 }
 
 .at-product-container {
-  margin-top: 80px;
+  margin-top: 20px;
 }
 
 .at-product-header {
@@ -170,9 +254,9 @@ const manuals = ["О симуляторе", "Калибровка пульта",
   margin-bottom: 20px;
 }
 
-.at-product-header .v-btn {
+/* .at-product-header .v-btn {
   width: 255px;
-}
+} */
 
 .at-product-info p {
   display: inline-block;
@@ -206,6 +290,20 @@ const manuals = ["О симуляторе", "Калибровка пульта",
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 10px;
+}
+
+.at-product-update {
+  height: 90px;
+  background-color: var(--at-background-color) !important;
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.at-product-update .v-row {
+  justify-content: space-between;
+  margin: 0 30px;
+  align-items: center;
 }
 
 /* .at-products-container {
