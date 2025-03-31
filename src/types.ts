@@ -1,3 +1,4 @@
+import { RetrieveSimulatorDto } from "../../agrotech-back/shared";
 
 
 export type News = {
@@ -32,7 +33,32 @@ export type VersionStats = {
     state: VersionState;
 }
 
-export type ProductDetails = { 
+export type ProductDetails = {
     productName: string;
     fullVersion: string;
+}
+
+export enum VersionManagerEvent {
+    StatusChange = 'status-change',
+    DownloadProgress = 'on-download-progress',
+    UnpackingProgress = 'on-unpacking-progress',
+}
+
+export type VersionManagerEventHandler = {
+    [VersionManagerEvent.StatusChange]: (options: ProductDetails, status: VersionManagerState) => void;
+    [VersionManagerEvent.DownloadProgress]: (progressDetails: { bytesLeft: number, rate: number }) => void;
+    [VersionManagerEvent.UnpackingProgress]: (progress: number) => void;
+};
+
+export type ProductLicense = {
+    isBroken: boolean;
+    // validFromDate: number;
+    // validUpToDate: number;
+    // restOfLifeTime: number;
+    // maxConcurrentResource: number;
+    // currentRunCounterValue: number;
+}
+
+export type RetrieveSimulatorWithLicenseDto = RetrieveSimulatorDto & {
+    license: ProductLicense;
 }

@@ -2,7 +2,7 @@ import { app, BrowserWindow, dialog, FileFilter, ipcMain } from 'electron';
 import contextMenu from 'electron-context-menu';
 import squirrel from 'electron-squirrel-startup';
 import path from 'path';
-import { ProductDetails } from './types';
+import { ProductDetails, VersionManagerEvent, VersionManagerEventHandler } from './types';
 import VersionManager from './utils/versionManager';
 
 let mainWindow: BrowserWindow | null = null;
@@ -67,16 +67,12 @@ app.on('activate', () => {
 
 let versionManager = new VersionManager();
 
-versionManager.onDownloadProgress = ((progressDetails: { bytesLeft: number, rate: number }) => {
+versionManager.emit = ((eventName: VersionManagerEvent, ...args: Parameters<VersionManagerEventHandler[typeof eventName]>) => {
   if (mainWindow) {
-    mainWindow.webContents.send('download-progress', progressDetails);
+    mainWindow.webContents.send(eventName, ...args);
   }
 });
-versionManager.onStatusChange = ((options: ProductDetails, status: string) => {
-  if (mainWindow) {
-    mainWindow.webContents.send('status-change', options, status);
-  }
-});
+
 
 safeIpcHandle('get-version-state', async (_, { options, expectedSizeBytes }: { options: ProductDetails, expectedSizeBytes: number }) => {
   return versionManager.getProductVersionState(options, expectedSizeBytes);

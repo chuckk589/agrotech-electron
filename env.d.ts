@@ -11,8 +11,10 @@ interface ImportMeta {
 interface Window {
   vmanager: {
     onError: (callback: (error: any) => void) => void;
-    onStatusChange: (callback: (options: ProductDetails, status: VersionManagerState) => void) => void;
-    onDownloadProgress: (callback: (progressDetails: { bytesLeft: number, rate: number }) => void) => void;
+    // onStatusChange: (callback: (options: ProductDetails, status: VersionManagerState) => void) => void;
+    // onDownloadProgress: (callback: (progressDetails: { bytesLeft: number, rate: number }) => void) => void;
+    // on: (event: VersionManagerEvent, callback: (...args: Parameters<VersionManagerEventHandler[T]>) => void) => void;
+    on<T extends VersionManagerEvent>(event: T, callback: (...args: Parameters<VersionManagerEventHandler[T]>) => void): void;
     getVersionState: (options: ProductDetails, expectedSizeBytes: number) => Promise<VersionStats>;
     getVersionManagerState: () => Promise<VersionManagerStats>;
     startDownload: (options: ProductDetails) => Promise<number>;

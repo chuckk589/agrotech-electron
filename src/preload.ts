@@ -1,13 +1,12 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { ProductDetails } from './types';
+import { ProductDetails, VersionManagerEvent, VersionManagerEventHandler } from './types';
 
 contextBridge.exposeInMainWorld('vmanager', {
-    // getVersionState: (productName: string, fullVersion: string, sizeBytes: number) => ipcRenderer.invoke('get-version-state', { productName, fullVersion, sizeBytes }),
     getVersionState: (options: ProductDetails, expectedSizeBytes: number) => ipcRenderer.invoke('get-version-state', { options, expectedSizeBytes }),
     getVersionManagerState: () => ipcRenderer.invoke('get-version-manager-state'),
-    // onStatusChange: (callback: (status: string) => void) => { ipcRenderer.on('status-change', (_, status) => callback(status)); },
-    onStatusChange: (callback: (options: ProductDetails, status: string) => void) => { ipcRenderer.on('status-change', (_, options, status) => callback(options, status)); },
-    onDownloadProgress: (callback: (progressDetails: { bytesLeft: number, rate: number }) => void) => { ipcRenderer.on('download-progress', (_, progress) => callback(progress)); },
+    on: (event: VersionManagerEvent, callback: (...args: Parameters<VersionManagerEventHandler[typeof event]>) => void) => {
+        ipcRenderer.on(event, (_, ...args) => callback(...args as any));
+    },
     onError: (callback: (error: string) => void) => { ipcRenderer.on('error', (_, error) => callback(error)); },
     startDownload: (options: ProductDetails) => ipcRenderer.invoke('new-product-download', { options }),
     startInstall: (options: ProductDetails) => ipcRenderer.invoke('install-product', { options }),

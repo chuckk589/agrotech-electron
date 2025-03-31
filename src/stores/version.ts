@@ -1,6 +1,5 @@
-// stores/apiStore.ts
 import { STORE_VERSION } from '@/db/constants';
-import { ProductDetails, VersionManagerState, VersionState } from '@/types';
+import { ProductDetails, VersionManagerEvent, VersionManagerState, VersionState } from '@/types';
 import { defineStore } from 'pinia';
 import { getItem, setItem } from '../db';
 
@@ -20,20 +19,21 @@ export const useVersionStore = defineStore('versionStore', {
 
     actions: {
         async initializeStore() {
-            window.vmanager.onDownloadProgress((progressDetails: { bytesLeft: number, rate: number }) => {
+
+            window.vmanager.on(VersionManagerEvent.DownloadProgress, (progressDetails: { bytesLeft: number, rate: number }) => {
                 this.productState.progress = Math.round((1 - progressDetails.bytesLeft / this.productMeta.totalSizeBytes) * 100);
                 this.productMeta.rate = (progressDetails.rate / 1024 / 1024).toFixed(2);
             });
-
-            window.vmanager.onStatusChange((options: ProductDetails, status: VersionManagerState) => {
+            window.vmanager.on(VersionManagerEvent.StatusChange, (options: ProductDetails, status: VersionManagerState) => {
                 console.log(status, options);
-                // if (status != VersionManagerState.Errored) {
-                //     this.refreshVersionState(options);
-                // }
-                if(options.fullVersion && options.productName) {
+                if (options.fullVersion && options.productName) {
                     this.refreshVersionState(options);
                 }
-            });
+            })
+            window.vmanager.on(VersionManagerEvent.UnpackingProgress, (progress: number) => {
+                this.productState.progress = progress;
+            })
+
             await this.refreshInstalledProducts()
         },
         async getVersionMetadata(fullName: string) {
@@ -130,8 +130,8 @@ export const useVersionStore = defineStore('versionStore', {
         }
     },
     getters: {
-        isManagerHandlingVersionDownload(state) {
-            return state.productState.state == VersionState.PartlyDownloaded || [VersionManagerState.Downloading, VersionManagerState.Paused].includes(state.managerState.state)
+        isManagerHandlingVersionDownloadOrInstallation(state) {
+            return state.productState.state == VersionState.PartlyDownloaded || [VersionManagerState.Installing, VersionManagerState.Downloading, VersionManagerState.Paused].includes(state.managerState.state)
         },
         isManagerIdle(state) {
             return [VersionManagerState.Idle, VersionManagerState.Errored, VersionManagerState.Paused].includes(state.managerState.state);

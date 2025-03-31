@@ -6,7 +6,7 @@ import { default as fs } from 'fs';
 import { throttle } from 'lodash';
 import path from 'path';
 import unzipper from 'unzipper';
-import { ProductDetails, VersionManagerState, VersionManagerStats, VersionState, VersionStats } from '../types';
+import { ProductDetails, VersionManagerEvent, VersionManagerEventHandler, VersionManagerState, VersionManagerStats, VersionState, VersionStats } from '../types';
 
 class VersionManager {
 
@@ -25,10 +25,17 @@ class VersionManager {
         url: string;
         controller: AbortController | null;
     }
-    onStatusChange: (options: ProductDetails, status: VersionManagerState) => void;
-    onDownloadProgress: (progressDetails: { bytesLeft: number, rate: number }) => void;
+    // onStatusChange: (options: ProductDetails, status: VersionManagerState) => void;
+    // onDownloadProgress: (progressDetails: { bytesLeft: number, rate: number }) => void;
+    // on<T extends VersionManagerEvent>(event: T, listener: VersionManagerEventHandler[T]): this {
+
+    // }
+
+    emit<T extends VersionManagerEvent>(event: T, ...args: Parameters<VersionManagerEventHandler[T]>) { }
 
     constructor() {
+
+
         this.basePath = path.join(app.getPath('userData'), 'products');
         this.tempPath = path.join(app.getPath('userData'), 'temp');
         this.currentHandlingVersion = {} as any;
@@ -95,7 +102,8 @@ class VersionManager {
     private changeStatus(status: VersionManagerState, force = false) {
         if (force || this.state != status) {
             this.state = status;
-            this.onStatusChange({ productName: this.currentHandlingVersion.productName, fullVersion: this.currentHandlingVersion.fullVersion, }, status);
+            // this.onStatusChange({ productName: this.currentHandlingVersion.productName, fullVersion: this.currentHandlingVersion.fullVersion, }, status);
+            this.emit(VersionManagerEvent.StatusChange, { productName: this.currentHandlingVersion.productName, fullVersion: this.currentHandlingVersion.fullVersion }, status);
         }
     }
     //FIXME:
@@ -111,7 +119,8 @@ class VersionManager {
         if (event.lengthComputable) {
             const bytesLeft = event.total - event.loaded;
             const rate = event.rate;
-            this.onDownloadProgress({ bytesLeft, rate });
+            // this.onDownloadProgress({ bytesLeft, rate });
+            this.emit(VersionManagerEvent.DownloadProgress, { bytesLeft, rate });
         }
     }
     private isBusy(): boolean {
@@ -181,26 +190,28 @@ class VersionManager {
     }
     async startProductVersionInstall(options: ProductDetails): Promise<void> {
         try {
-            return new Promise((resolve, reject) => {
-                if (this.isBusy()) return;
+            if (this.isBusy()) return;
 
-                this.switchHandlingVersion(options);
+            this.switchHandlingVersion(options);
 
-                this.changeStatus(VersionManagerState.Installing);
-                // this.currentHandlingVersion.fullVersion = options.fullVersion;
-                // const finalPath = path.join(this.basePath, options.productName, this.currentHandlingVersion.fullVersion);
+            this.changeStatus(VersionManagerState.Installing);
 
-                const zipPath = this.getCurrentVersionTempPath();
+            const fullPath = this.getCurrentVersionTempPath();
 
-                fs
-                    .createReadStream(zipPath)
-                    .pipe(unzipper.Extract({ path: this.getCurrentVersionPath() }))
-                    .promise()
-                    .then(() => {
-                        this.changeStatus(VersionManagerState.Idle);
-                        resolve()
-                    });
-            })
+            // fs
+            //     .createReadStream(zipPath)
+            //     .pipe(unzipper.Extract({ path: this.getCurrentVersionPath() }))
+            //     .promise()
+            //     .then(() => {
+            //         this.changeStatus(VersionManagerState.Idle);
+            //         resolve()
+            //     });
+            const directory = await unzipper.Open.file(fullPath);
+
+            await this.extractZip(directory, this.getCurrentVersionPath());
+
+            this.changeStatus(VersionManagerState.Idle);
+
         } catch (error) {
             this.throwError(error);
         }
@@ -220,12 +231,54 @@ class VersionManager {
 
             this.changeStatus(VersionManagerState.Installing);
 
-            await directory.extract({ path: finalPath })
+            await this.extractZip(directory, finalPath);
 
             this.changeStatus(VersionManagerState.Idle);
+
         } catch (error) {
             this.throwError(error);
         }
+    }
+    private async extractZip(directory: unzipper.CentralDirectory, destination: string, interval = 1000): Promise<void> {
+        let totalBytes = 0;
+
+        directory.files.forEach((file) => {
+            totalBytes += file.uncompressedSize || 0;
+        });
+
+        let extractedBytes = 0;
+
+        let lastUpdate = Date.now();
+
+        for (const file of directory.files) {
+            const outputPath = `${destination}/${file.path}`;
+            if (file.type == 'File') {
+                await new Promise((resolve, reject) => {
+                    const writeStream = fs.createWriteStream(outputPath);
+                    const readStream = file.stream();
+
+                    readStream.on('data', (chunk) => {
+                        const now = Date.now();
+
+                        extractedBytes += chunk.length;
+
+                        if (now - lastUpdate >= interval) {
+                            const progress = ((extractedBytes / totalBytes) * 100);
+                            lastUpdate = now;
+                            this.emit(VersionManagerEvent.UnpackingProgress, progress);
+                        }
+                    });
+
+                    writeStream.on('finish', () => resolve(true));
+                    writeStream.on('error', reject);
+
+                    readStream.pipe(writeStream);
+                });
+            } else {
+                fs.mkdirSync(outputPath, { recursive: true });
+            }
+        }
+        this.emit(VersionManagerEvent.UnpackingProgress, 100);
     }
     async startProductVersionUninstall(options: ProductDetails): Promise<void> {
         try {
