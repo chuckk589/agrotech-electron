@@ -24,6 +24,13 @@ export default defineConfig((env) => {
         '@': path.resolve(__dirname, './src'),
       },
     },
+    css: {
+      preprocessorOptions: {
+        scss: {
+          additionalData: `@use "@/styles/variables.scss" as *;`,
+        },
+      },
+    },
     clearScreen: false,
   } as UserConfig;
 });

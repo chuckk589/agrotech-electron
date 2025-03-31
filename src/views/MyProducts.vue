@@ -6,6 +6,7 @@
 
 <script setup lang="ts">
 import { useApiStore } from '@/stores/api';
+import { ProductDetails } from '@/types';
 import { onMounted, ref } from 'vue';
 import ProductCard from '../components/ProductCard.vue';
 
@@ -15,9 +16,13 @@ const ownedProducts = ref([]);
 
 onMounted(async () => {
   await apiStore.fetchProducts();
+
   const _ownedProducts = await window.vmanager.getInstalledProducts();
+
   ownedProducts.value = apiStore.products.filter(product => {
-    return _ownedProducts.includes(product.label)
+    return _ownedProducts.some((ownedProduct: ProductDetails) => {
+      return ownedProduct.productName == product.label;
+    });
   });
 });
 

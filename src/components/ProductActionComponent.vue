@@ -1,10 +1,11 @@
 <template>
   <div class="d-flex flex-column at-product-action-comp" style="width:30%">
-    <v-btn v-if="!versionStore.isManagerBusy" :loading="versionStore.loading"
-      @click="versionStore.action(props.label, props.version.fullName)">{{ buttonLabel
-      }}</v-btn>
+    <v-btn v-if="!versionStore.isManagerHandlingVersionDownload" :loading="versionStore.loading"
+      @click="versionStore.action(props.label, props.version.fullName)">
+      {{ buttonLabel }}
+    </v-btn>
     <div class="d-flex flex-wrap" style="position: relative;"
-      v-if="versionMatchesCurrentOrNone && versionStore.isManagerBusy">
+      v-if="versionMatchesCurrentOrNone && versionStore.isManagerHandlingVersionDownload">
       <v-progress-linear color="secondary" v-model="versionStore.productState.progress" :height="42">
         <strong>{{ versionStore.productState.progress }}%</strong>
       </v-progress-linear>

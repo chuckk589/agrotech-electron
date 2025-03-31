@@ -18,12 +18,12 @@ interface Window {
     startDownload: (options: ProductDetails) => Promise<number>;
     startInstall: (options: ProductDetails) => Promise<void>;
     startUninstall: (options: ProductDetails) => Promise<void>;
-    cancelDownload: (fullVersion) => Promise<void>;
+    cancelDownload: (options: ProductDetails) => Promise<void>;
     pauseDownload: () => Promise<void>;
     resumeDownload: () => Promise<void>;
     exportProduct: (options: ProductDetails, fullPath: string) => Promise<void>;
-    importProduct: (productName: string, fullPath: string) => Promise<void>;
-    getInstalledProducts: () => Promise<string[]>;
+    importProduct: (fullPath: string) => Promise<void>;
+    getInstalledProducts: () => Promise<ProductDetails[]>;
     launchProduct: (options: ProductDetails) => Promise<void>;
   },
   filesystem: {

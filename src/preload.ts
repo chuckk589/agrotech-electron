@@ -12,13 +12,13 @@ contextBridge.exposeInMainWorld('vmanager', {
     startDownload: (options: ProductDetails) => ipcRenderer.invoke('new-product-download', { options }),
     startInstall: (options: ProductDetails) => ipcRenderer.invoke('install-product', { options }),
     startUninstall: (options: ProductDetails) => ipcRenderer.invoke('uninstall-product', { options }),
-    cancelDownload: (fullVersion: string) => ipcRenderer.invoke('cancel-download', { fullVersion }),
+    cancelDownload: (options: ProductDetails) => ipcRenderer.invoke('cancel-download', { options }),
     pauseDownload: () => ipcRenderer.invoke('pause-download'),
     resumeDownload: async () => await ipcRenderer.invoke('resume-download'),
     exportProduct: async (options: ProductDetails, fullPath: string) => await ipcRenderer.invoke('start-product-export', { options, fullPath }),
-    importProduct: async (productName: string, fullPath: string) => await ipcRenderer.invoke('start-product-import', { productName, fullPath }),
+    importProduct: async (fullPath: string) => await ipcRenderer.invoke('start-product-import', { fullPath }),
     getInstalledProducts: async () => await ipcRenderer.invoke('get-installed-versions'),
-    launchProduct: async (options: ProductDetails) => await ipcRenderer.invoke('launch-product', { options })
+    launchProduct: async (options: ProductDetails) => await ipcRenderer.invoke('launch-product', { options }),
 });
 
 contextBridge.exposeInMainWorld('filesystem', {

@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { app, BrowserWindow, dialog, FileFilter, ipcMain } from 'electron';
 import contextMenu from 'electron-context-menu';
 import squirrel from 'electron-squirrel-startup';
@@ -17,7 +16,6 @@ contextMenu({
 
 const createWindow = () => {
   // Create the browser window.
-  const a = axios.get('http://localhost:3000');
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
@@ -92,8 +90,8 @@ safeIpcHandle('get-version-manager-state', async () => {
   return versionManager.getVersionManagerState();
 });
 
-safeIpcHandle('cancel-download', async (_, { fullVersion }) => {
-  return versionManager.resetDownload(fullVersion);
+safeIpcHandle('cancel-download', async (_, { options }) => {
+  return versionManager.resetDownload(options);
 })
 
 safeIpcHandle('pause-download', async () => {
@@ -110,8 +108,8 @@ safeIpcHandle('install-product', async (_, { options }: { options: ProductDetail
 safeIpcHandle('start-product-export', async (_, { options, fullPath }: { options: ProductDetails, fullPath: string }) => {
   return versionManager.startProductVersionExport(options, fullPath);
 });
-safeIpcHandle('start-product-import', async (_, { productName, fullPath }) => {
-  return versionManager.startProductVersionImport(productName, fullPath);
+safeIpcHandle('start-product-import', async (_, { fullPath }) => {
+  return versionManager.startProductVersionImport(fullPath);
 })
 
 safeIpcHandle('uninstall-product', async (_, { options }: { options: ProductDetails }) => {
@@ -124,6 +122,7 @@ safeIpcHandle('get-installed-versions', async (_) => {
 safeIpcHandle('launch-product', async (_, { options }: { options: ProductDetails }) => {
   return versionManager.launchProductVersion(options);
 });
+
 //filesystem
 safeIpcHandle('open-directory-dialog', async (_, type: string) => {
   const filters: FileFilter[] = [];
@@ -153,6 +152,7 @@ function safeIpcHandle(channel: string, listener: (event: Electron.IpcMainInvoke
       if (mainWindow) {
         mainWindow.webContents.send('error', e);
       }
+      return
     }
   });
 }

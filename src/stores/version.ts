@@ -15,10 +15,11 @@ export const useVersionStore = defineStore('versionStore', {
         productState: { progress: 0, state: VersionState.NotInstalled },
         managerState: { state: VersionManagerState.Idle, currentHandlingVersion: '' },
         productMeta: { totalSizeBytes: 0, rate: '' },
+        installedProducts: [] as ProductDetails[],
     }),
 
     actions: {
-        async subscribe() {
+        async initializeStore() {
             window.vmanager.onDownloadProgress((progressDetails: { bytesLeft: number, rate: number }) => {
                 this.productState.progress = Math.round((1 - progressDetails.bytesLeft / this.productMeta.totalSizeBytes) * 100);
                 this.productMeta.rate = (progressDetails.rate / 1024 / 1024).toFixed(2);
@@ -26,9 +27,14 @@ export const useVersionStore = defineStore('versionStore', {
 
             window.vmanager.onStatusChange((options: ProductDetails, status: VersionManagerState) => {
                 console.log(status, options);
-                //   this.managerState.state = status;
-                this.refreshVersionState(options);
+                // if (status != VersionManagerState.Errored) {
+                //     this.refreshVersionState(options);
+                // }
+                if(options.fullVersion && options.productName) {
+                    this.refreshVersionState(options);
+                }
             });
+            await this.refreshInstalledProducts()
         },
         async getVersionMetadata(fullName: string) {
             const versions: VersionMetaData[] = await getItem(STORE_VERSION, 'versions') || [];
@@ -47,6 +53,9 @@ export const useVersionStore = defineStore('versionStore', {
 
             await setItem(STORE_VERSION, 'versions', versions);
         },
+        async refreshInstalledProducts() {
+            this.installedProducts = await window.vmanager.getInstalledProducts();
+        },
         async refreshVersionState(options: ProductDetails) {
             const storedMetaData = await this.getVersionMetadata(options.fullVersion)
             this.productState = await window.vmanager.getVersionState(options, storedMetaData.sizeBytes);
@@ -63,7 +72,7 @@ export const useVersionStore = defineStore('versionStore', {
         async startInstall(productName: string, fullVersion: string) {
             this.loading = true;
             await window.vmanager.startInstall({ productName, fullVersion });
-            // await this.refreshVersionState(productName, fullVersion);
+            await this.refreshInstalledProducts();
             this.loading = false;
         },
         async pauseDownload() {
@@ -78,33 +87,40 @@ export const useVersionStore = defineStore('versionStore', {
         },
         async cancelDownload(productName: string, fullVersion: string) {
             this.loading = true;
-            await window.vmanager.cancelDownload(fullVersion);
-            // await this.refreshVersionState(productName, fullVersion);
+            await window.vmanager.cancelDownload({ productName, fullVersion });
             this.loading = false;
         },
         async action(productName: string, fullVersion: string) {
             if (this.isVersionNotLoaded) {
-                await this.startDownload(productName, fullVersion);
+                await this.startUpdate(productName, fullVersion);
             } else if (this.productState.state == VersionState.Downloaded) {
                 await this.startInstall(productName, fullVersion);
             } else if (this.productState.state == VersionState.Installed) {
                 await this.startUninstall(productName, fullVersion);
             }
         },
+        async startUpdate(productName: string, fullVersion: string) {
+            const installedProduct = this.installedProducts.find((p: ProductDetails) => p.productName == productName);
+            if (installedProduct) {
+                await this.startUninstall(productName, installedProduct.fullVersion);
+            }
+            await this.startDownload(productName, fullVersion);
+        },
         async startExport(productName: string, fullVersion: string, fullPath: string) {
             this.loading = true;
             await window.vmanager.exportProduct({ productName, fullVersion }, fullPath);
             this.loading = false;
         },
-        async startImport(productName: string, fullPath: string) {
+        async startImport(fullPath: string) {
             this.loading = true;
-            await window.vmanager.importProduct(productName, fullPath);
+            await window.vmanager.importProduct(fullPath);
+            await this.refreshInstalledProducts();
             this.loading = false
         },
         async startUninstall(productName: string, fullVersion: string) {
             this.loading = true;
             await window.vmanager.startUninstall({ productName, fullVersion });
-            // await this.refreshVersionState(productName, fullVersion);
+            await this.refreshInstalledProducts();
             this.loading = false
         },
         async launch(productName: string, fullVersion: string) {
@@ -114,8 +130,11 @@ export const useVersionStore = defineStore('versionStore', {
         }
     },
     getters: {
-        isManagerBusy(state) {
+        isManagerHandlingVersionDownload(state) {
             return state.productState.state == VersionState.PartlyDownloaded || [VersionManagerState.Downloading, VersionManagerState.Paused].includes(state.managerState.state)
+        },
+        isManagerIdle(state) {
+            return [VersionManagerState.Idle, VersionManagerState.Errored, VersionManagerState.Paused].includes(state.managerState.state);
         },
         isDownloading(state) {
             return state.managerState.state == VersionManagerState.Downloading;
@@ -124,7 +143,8 @@ export const useVersionStore = defineStore('versionStore', {
             return state.productState.state == VersionState.PartlyDownloaded || state.productState.state == VersionState.NotInstalled;
         },
         isInstalled(state) {
-            return state.productState.state == VersionState.Installed;
-        }
+            return state.managerState.state == VersionManagerState.Idle && state.productState.state == VersionState.Installed;
+        },
+
     }
 });

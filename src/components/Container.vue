@@ -31,7 +31,6 @@
     </v-navigation-drawer>
 
     <v-main>
-      <!-- <v-alert v-show="errorStore.active" :text="errorStore.error" type="error" icon="" closable @click:close=""></v-alert> -->
       <v-snackbar location="top" v-model="errorStore.active" :text="errorStore.error" color="error">
         <template v-slot:actions>
           <v-btn color="blue" variant="text" @click="errorStore.clearError"> Close </v-btn>
@@ -52,14 +51,19 @@ import logo from '../assets/logo.svg';
 const online = ref(false)
 const errorStore = useErrorStore();
 
-onMounted(async () => {
+const checkOnline = async () => {
   try {
-    await fetch('https://www.google.com', { mode: 'no-cors' });
+    await fetch('https://www.ya.ru', { mode: 'no-cors', method: 'head' });
     online.value = true;
   } catch (error) {
     online.value = false;
   }
-
+};
+onMounted(async () => {
+  await checkOnline();
+  setInterval(async () => {
+    await checkOnline();
+  }, 10000);
 });
 
 </script>

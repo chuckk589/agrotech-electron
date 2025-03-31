@@ -2,8 +2,9 @@
   <div>
     <div class="at-app-bar">
       <v-btn variant="tonal" @click="$router.go(-1)">back</v-btn>
-      <v-btn variant="tonal" @click="selectImported">import</v-btn>
-      <v-btn :disabled="!versionStore.isInstalled" variant="tonal" @click="selectDirectory">export</v-btn>
+      <v-btn :disabled="!versionStore.isManagerIdle" variant="tonal" @click="selectImported">import</v-btn>
+      <v-btn :disabled="!(versionStore.isInstalled && versionStore.isManagerIdle)" variant="tonal"
+        @click="selectDirectory">export</v-btn>
       <v-menu location="bottom">
         <template v-slot:activator="{ props }">
           <v-btn v-bind="props" variant="tonal">
@@ -18,9 +19,9 @@
         </v-list>
       </v-menu>
     </div>
-    <div class="at-product-update" v-if="!isLastVersion">
+    <div class="at-product-update" v-if="!isLastVersionInstalled">
       <v-row>
-        Доступна новая версия продукта {{ latestVersion }}
+        Доступна новая версия продукта {{ latestVersion.versionStr }}
         <v-btn @click="installLatest">Обновить продукт</v-btn>
       </v-row>
     </div>
@@ -33,7 +34,8 @@
             <ProductActionComponent :label="product.label" :version="currentVersion"></ProductActionComponent>
           </v-col>
         </v-row>
-        <v-btn v-if="versionStore.isInstalled" class="mb-2" icon="mdi-play" @click="versionStore.launch(product.label, currentVersion.fullName)"></v-btn>
+        <v-btn v-if="versionStore.isInstalled" class="mb-2" icon="mdi-play"
+          @click="versionStore.launch(product.label, currentVersion.fullName)"></v-btn>
       </div>
       <div>
         <v-tabs v-model="tab" align-tabs="start">
@@ -69,9 +71,6 @@
                         <v-card>
                           <v-card-text>Системные требования (для большинства современных игр):</v-card-text>
                           <v-card-text class="at-product-sysreq">
-                            <!-- <ul>
-                              <li v-for="sys_req in currentVersion.sys_req" :key="sys_req">{{ sys_req }}</li>
-                            </ul> -->
                             {{ currentVersion.sys_req }}
                           </v-card-text>
                         </v-card>
@@ -154,17 +153,23 @@ const tab_spec = ref(1);
 
 const product_id = +route.query.product_id;
 const currentVersionIdx = ref(0);
-const latestVersion = computed(() => product.value.versions[product.value.versions.length - 1].versionStr);
 
-// const versionList: ComputedRef<RetrieveVersionDto[]> = computed(() => product.value.versions.filter((version) => version.id != currentVersionIdx.value));
-// const currentVersion: ComputedRef<RetrieveVersionDto> = computed(() => product.value.versions.find((version) => version.id == currentVersionIdx.value));
 const versionList = ref<RetrieveVersionDto[]>([]);
 const currentVersion = ref<RetrieveVersionDto>({} as any);
 
+// const latestVersion = computed(() => product.value.versions[product.value.versions.length - 1].versionStr);
+const latestVersion = ref<RetrieveVersionDto>({ versionStr: 'string' } as any);
+
 
 const images = computed(() => product.value.images.map((image) => new URL(image, API_URL).href));
-//FIXME:
-const isLastVersion = computed(() => currentVersionIdx.value != product.value.versions.length - 1);
+
+const isLastVersionInstalled = computed(() => {
+  const installed = versionStore.installedProducts.find((installedP) => installedP.productName == product.value.label);
+  if (installed) {
+    return installed.fullVersion == latestVersion.value?.fullName;
+  }
+  return true;
+});
 //temp values
 const sys_info = [
   "Размер  приложения: 3.5 ГБ.",
@@ -185,14 +190,29 @@ const news = [{
 
 onMounted(async () => {
   const entry = apiStore.products.find(product => product.id == product_id);
+
   if (entry) {
+
+    const fullVersioonInstalled = versionStore.installedProducts.find((product) => product.productName == entry.label);
+
+    let currentVersionId = null;
+
+    if (fullVersioonInstalled) {
+      currentVersionId = entry.versions.find((version) => version.fullName == fullVersioonInstalled.fullVersion)?.id;
+    } else {
+      currentVersionId = entry.versions[0].id;
+    }
+    console.log(`OnMounted, fullVersioonInstalled: ${fullVersioonInstalled?.fullVersion}, currentVersionId: ${currentVersionId}`);
+
+    //TODO: implement version check
+    latestVersion.value = entry.versions[0];
+
     product.value = entry;
-    await switchVersion(product.value.versions[0].id);
+    await switchVersion(currentVersionId);
   }
 });
-//FIXME:
 const installLatest = async () => {
-  await switchVersion(product.value.versions[product.value.versions.length - 1].id);
+  await switchVersion(latestVersion.value.id);
   await versionStore.action(product.value.label, currentVersion.value.fullName);
 }
 
@@ -202,7 +222,7 @@ const switchVersion = async (id: number) => {
     currentVersion.value = version;
     currentVersionIdx.value = id;
     versionList.value = product.value.versions.filter((version) => version.id != id);
-    await versionStore.refreshVersionState({productName: product.value.label, fullVersion: version.fullName});
+    await versionStore.refreshVersionState({ productName: product.value.label, fullVersion: version.fullName });
     console.log(versionStore.managerState, versionStore.productState, versionStore.productMeta);
   }
 }
@@ -211,7 +231,6 @@ const switchVersion = async (id: number) => {
 const selectDirectory = async () => {
   const selectedPath = await window.filesystem.openDirectoryDialog('openDirectory');
   if (selectedPath) {
-    console.log(selectedPath);
     await versionStore.startExport(product.value.label, currentVersion.value.fullName, selectedPath);
   }
 };
@@ -219,7 +238,7 @@ const selectDirectory = async () => {
 const selectImported = async () => {
   const selectedPath = await window.filesystem.openDirectoryDialog('openFile');
   if (selectedPath) {
-    await versionStore.startImport(product.value.label, selectedPath);
+    await versionStore.startImport(selectedPath);
   }
 };
 </script>

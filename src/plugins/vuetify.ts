@@ -6,28 +6,17 @@ import 'vuetify/dist/vuetify.min.css';
 import { createVuetify } from 'vuetify';
 
 export default createVuetify({
-    defaults: {
-        VTextarea:{
-            density: 'compact'
-        },
-        VSelect: {
-            density: 'compact'
-        },
-        VTextField: {
-            density: 'compact'
-        },
+  defaults: {
+    VTextarea: {
+      density: 'compact'
     },
-    moduleOptions: {
-        styles: { configFile: '/styles/variables.css' }
-      },
-    theme: {
-        themes: {
-          light: {
-            colors: {
-            //   primary: "#E53935", // #E53935
-            //   info:  "#E53935", 
-            }
-          },
-        },
-      },
+    VSelect: {
+      density: 'compact'
+    },
+    VTextField: {
+      density: 'compact'
+    },
+   
+  },
+
 });

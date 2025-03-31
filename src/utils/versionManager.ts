@@ -1,6 +1,7 @@
 import archiver from 'archiver';
 import axios, { AxiosProgressEvent, AxiosRequestConfig } from 'axios';
 import child from 'child_process';
+import { app } from 'electron';
 import { default as fs } from 'fs';
 import { throttle } from 'lodash';
 import path from 'path';
@@ -8,6 +9,7 @@ import unzipper from 'unzipper';
 import { ProductDetails, VersionManagerState, VersionManagerStats, VersionState, VersionStats } from '../types';
 
 class VersionManager {
+
     /**
      * @param basePath The base path where the versions are stored
      * @param tempPath The path where the temporary files are stored
@@ -27,8 +29,8 @@ class VersionManager {
     onDownloadProgress: (progressDetails: { bytesLeft: number, rate: number }) => void;
 
     constructor() {
-        this.basePath = path.join(__dirname, 'products');
-        this.tempPath = path.join(__dirname, 'temp');
+        this.basePath = path.join(app.getPath('userData'), 'products');
+        this.tempPath = path.join(app.getPath('userData'), 'temp');
         this.currentHandlingVersion = {} as any;
 
         if (!fs.existsSync(this.basePath)) {
@@ -90,8 +92,8 @@ class VersionManager {
         return parseInt(response.headers['content-length'], 10);
     }
 
-    private changeStatus(status: VersionManagerState) {
-        if (this.state != status) {
+    private changeStatus(status: VersionManagerState, force = false) {
+        if (force || this.state != status) {
             this.state = status;
             this.onStatusChange({ productName: this.currentHandlingVersion.productName, fullVersion: this.currentHandlingVersion.fullVersion, }, status);
         }
@@ -165,7 +167,10 @@ class VersionManager {
                 this.changeStatus(VersionManagerState.Idle);
             });
 
-            this.changeStatus(VersionManagerState.Downloading);
+            //FIXME: delaying this for async state manager to catch return bytes size
+            // need this to return bytes size before the even fire state manager update
+            // probably should pass optional params in the event instead
+            setTimeout(() => { this.changeStatus(VersionManagerState.Downloading); }, 1000);
 
             return totalBytes;
         } catch (error) {
@@ -187,10 +192,6 @@ class VersionManager {
 
                 const zipPath = this.getCurrentVersionTempPath();
 
-                if (!fs.existsSync(zipPath)) {
-                    throw new Error(`Файл ${zipPath} не найден`);
-                }
-
                 fs
                     .createReadStream(zipPath)
                     .pipe(unzipper.Extract({ path: this.getCurrentVersionPath() }))
@@ -200,6 +201,28 @@ class VersionManager {
                         resolve()
                     });
             })
+        } catch (error) {
+            this.throwError(error);
+        }
+    }
+    //FIXME: same as startProductVersionInstall
+    async startProductVersionImport(fullPath: string): Promise<void> {
+        try {
+            if (this.isBusy()) return;
+
+            const directory = await unzipper.Open.file(fullPath);
+
+            const metaOptions = await this.readExportMetaDataFile(directory);
+
+            this.switchHandlingVersion(metaOptions);
+
+            const finalPath = this.getCurrentVersionPath();
+
+            this.changeStatus(VersionManagerState.Installing);
+
+            await directory.extract({ path: finalPath })
+
+            this.changeStatus(VersionManagerState.Idle);
         } catch (error) {
             this.throwError(error);
         }
@@ -222,6 +245,7 @@ class VersionManager {
                     fs.rm(finalPath, { recursive: true }, (err) => {
                         if (err) {
                             reject(err);
+                            return
                         }
                         this.changeStatus(VersionManagerState.Idle);
                         resolve();
@@ -235,7 +259,7 @@ class VersionManager {
     async startProductVersionExport(options: ProductDetails, fullPath: string): Promise<void> {
         try {
             if (this.isBusy()) return;
-            // const folderPath = path.join(this.basePath, productName, fullVersion);
+
             this.switchHandlingVersion(options);
 
             this.changeStatus(VersionManagerState.Packing);
@@ -254,9 +278,14 @@ class VersionManager {
                 });
 
                 archive.on('error', reject);
-                // archive.on('progress')
                 archive.pipe(output);
+
                 archive.directory(folderPath, false);
+
+                const metaFile = this.createExportMetaDataFile(options);
+
+                archive.append(metaFile.fileStream, { name: metaFile.fileName });
+
                 archive.finalize();
             });
 
@@ -264,29 +293,7 @@ class VersionManager {
             this.throwError(error);
         }
     }
-    async startProductVersionImport(productName: string, fullPath: string): Promise<void> {
-        try {
-            if (this.isBusy()) return;
 
-            const fullVersion = path.basename(fullPath, '.zip');
-
-            this.switchHandlingVersion({ productName, fullVersion });
-
-            this.changeStatus(VersionManagerState.Installing);
-
-            // const finalPath = path.join(this.basePath, productName, fillVersion);
-            const finalPath = this.getCurrentVersionPath();
-
-            await fs
-                .createReadStream(fullPath)
-                .pipe(unzipper.Extract({ path: finalPath }))
-                .promise()
-                .then(() => this.changeStatus(VersionManagerState.Idle));
-
-        } catch (error) {
-            this.throwError(error);
-        }
-    }
     private async removeTempFile(fullVersion: string): Promise<void> {
         const tempFilePath = this.getVersionTempPath(fullVersion);
 
@@ -304,17 +311,28 @@ class VersionManager {
     async resumeDownload(): Promise<void> {
         await this.startProductVersionDownload({ productName: this.currentHandlingVersion.productName, fullVersion: this.currentHandlingVersion.fullVersion });
     }
-    async getInstalledProducts(): Promise<string[]> {
-        return fs.readdirSync(this.basePath);
+    //TODO: consider using a readExportMetaDataFile
+    async getInstalledProducts(): Promise<ProductDetails[]> {
+        const productNames = fs.readdirSync(this.basePath)
+
+        return productNames.map((productName) => {
+            const versions = fs.readdirSync(path.join(this.basePath, productName));
+
+            if (versions.length > 0) {
+                return { productName, fullVersion: versions[0] } // Return the first version found, should be one
+            }
+        })
+            .filter(Boolean)
     }
-    resetDownload(fullVersion: string): void {
+    resetDownload(options: ProductDetails): void {
         if (this.currentHandlingVersion.controller) {
             this.currentHandlingVersion.controller.abort();
         }
+        this.switchHandlingVersion(options);
 
-        this.removeTempFile(fullVersion);
+        this.removeTempFile(options.fullVersion);
 
-        this.changeStatus(VersionManagerState.Idle);
+        this.changeStatus(VersionManagerState.Idle, true);
 
         this.currentHandlingVersion = {} as any
     }
@@ -330,8 +348,9 @@ class VersionManager {
                 child.execFile(executablePath, (error, stdout, stderr) => {
                     if (error) {
                         reject(error);
+                    } else {
+                        resolve();
                     }
-                    resolve();
                 });
             })
         } catch (error) {
@@ -351,6 +370,34 @@ class VersionManager {
         }
 
         return path.join(productPath, executable);
+    }
+    // VERSIONING
+    private readonly metaFileName = 'meta.json';
+
+    private createExportMetaDataFile(options: ProductDetails) {
+        const content = JSON.stringify(options, null, 2);
+        const fileName = this.metaFileName;
+
+        const fileStream = Buffer.from(content);
+
+        return {
+            fileName,
+            fileStream
+        }
+    }
+    private async readExportMetaDataFile(directory: unzipper.CentralDirectory): Promise<ProductDetails> {
+        const fileName = this.metaFileName;
+        const fileEntry = directory.files.find((file) => file.path == fileName);
+
+        if (!fileEntry) {
+            throw new Error(`'Incorrect export archive. Missing meta file.'`);
+        }
+
+        const content = await fileEntry.buffer();
+
+        const decodedContent = content.toString('utf-8');
+
+        return JSON.parse(decodedContent) as ProductDetails;
     }
     // PATHING
     private getCurrentVersionTempPath() {
