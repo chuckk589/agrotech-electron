@@ -137,7 +137,7 @@ export const useVersionStore = defineStore('versionStore', {
             return [VersionManagerState.Installing, VersionManagerState.Packing].includes(state.managerState.state);
         },
         isManagerIdle(state) {
-            return [VersionManagerState.Idle, VersionManagerState.Errored, VersionManagerState.Paused].includes(state.managerState.state);
+            return [VersionManagerState.Idle, VersionManagerState.Errored].includes(state.managerState.state);
         },
         isDownloading(state) {
             return state.managerState.state == VersionManagerState.Downloading;
