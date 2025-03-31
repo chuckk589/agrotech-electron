@@ -1,0 +1,131 @@
+// Text
+$font-text: 'Inter', sans-serif;
+$font-text-weight: 400;
+$font-heading: 'Inter', sans-serif;
+$font-heading-weight: 600;
+
+$body-text-size: 14px;
+$body-text-line: 1.5;
+
+$unit: 4px;
+
+// Spacing
+$spacing-1: 4px;
+$spacing-2: 8px;
+$spacing-3: 12px;
+$spacing-4: 16px;
+$spacing-5: 20px;
+$spacing-6: 24px;
+$spacing-8: 32px;
+$spacing-10: 40px;
+$spacing-12: 48px;
+
+// Breakpoint
+$breakpoint-lg: 1600px;
+
+// Grid
+$grid-columns: 7;
+$grid-gutter: 16px;
+$grid-gap: 16px;
+
+// Border
+$border-1: 1px;
+
+// Radius
+$radius-small: 8px;
+$radius-medium: 12px;
+$radius-large: 16px;
+$radius-huge: 24px;
+$radius-mega: 100px;
+
+// Icons
+$icon-20: 20px;
+$icon-32: 32px;
+$icon-40: 40px;
+
+// Padding
+$card-padding-large: 32px;
+$card-padding-big: 24px;
+$card-padding-max: 20px;
+$button-padding-big: 48px;
+$button-padding-max: 24px;
+$button-padding-medium: 16px;
+$button-padding-small: 12px;
+
+// Typography
+// Size typography
+$type-scale-24: 24px;
+$type-scale-20: 20px;
+$type-scale-18: 18px;
+$type-scale-16: 16px;
+$type-scale-14: 14px;
+$type-scale-12: 12px;
+
+// Heading
+$heading-max-font-size: 32px;
+$heading-max-height: 1.3;
+$heading-medium-font-size: 24px;
+$heading-medium-height: 1.3;
+$heading-small-font-size: 20px;
+$heading-small-line-height: 1.3;
+
+// Body
+$text-big-font-size: 18px;
+$text-big-line-height: 1.5;
+$text-max-font-size: 16px;
+$text-max-line-height: 1.5;
+$text-medium-font-size: 14px;
+$text-medium-line-height: 1.5;
+$text-small-font-size: 12px;
+$text-small-line-height: 1.4;
+$button-font-size: 16px;
+$button-line-height: 1;
+$blur-background-medium: 30px;
+
+// Neutral Colors
+$neutral-800: #161922;
+$neutral-700: #20232D;
+$neutral-600: #31353F;
+$neutral-500: #525866;
+$neutral-400: #868C98;
+$neutral-300: #CDD0D5;
+$neutral-200: #E2E4E9;
+$neutral-100: #F6F8FA;
+$neutral-0: #FFFFFF;
+
+// Primary Colors
+$primary-green-dark: #2D9F75;
+$primary-green-base: #38C793;
+$primary-orange-base: #F17B2C;
+$primary-orange-dark: #CC6724;
+
+// State Colors
+$state-success: $primary-green-base;
+$state-warning: $primary-orange-base;
+$state-error: #FF4D4F;
+$state-information: #1890FF;
+$state-away: #FAAD14;
+$state-feature: #722ED1;
+$state-neutral: $neutral-400;
+$state-verified: #13C2C2;
+
+// Text Colors
+$text-sub-500: $neutral-500;
+$text-soft-400: $neutral-400;
+$text-disabled-300: $neutral-300;
+$text-white-0: $neutral-0;
+
+// Stroke Colors
+$stroke-white-15: rgba(255, 255, 255, 0.15);
+$stroke-white-30: rgba(255, 255, 255, 0.30);
+
+// Icon Colors
+$icon-soft-400: $neutral-400;
+$icon-green-base: $primary-green-base;
+$icon-white-0: $neutral-0;
+
+// Background Colors
+$bg-soft-600: #25252A;
+$bg-green-base: $primary-green-base;
+$bg-light-15: rgba(255, 255, 255, 0.15);
+$bg-soft-40: rgba(255, 255, 255, 0.40);

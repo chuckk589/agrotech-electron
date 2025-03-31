@@ -1,8 +1,8 @@
 <template>
   <v-app>
-    <v-navigation-drawer permanent class="at-drawer">
+    <v-navigation-drawer permanent class="at-drawer" width="224">
+      <v-img class="at-logo" inline :src="logo"></v-img>
       <v-list class="at-menu-text">
-        <v-img class="at-logo" :src="logo"></v-img>
         <v-list-item to="/main/products" value="1">
           <v-list-item-title>Продукты</v-list-item-title>
         </v-list-item>
@@ -24,7 +24,7 @@
         </v-list-item>
       </v-list>
       <div class="at-online-block">
-        <div :class="online ? 'at-online-dot' : 'at-offline-dot'"></div>
+        <div :class="'at-dot ' + (online ? 'at-online-dot' : 'at-offline-dot')"></div>
         <div>{{ online ? "Онлайн" : "Оффлайн" }}</div>
       </div>
 
@@ -67,113 +67,76 @@ onMounted(async () => {
 });
 
 </script>
-<style>
+<style lang="scss">
 .at-drawer {
-  /* width: var(--at-drawer-width) !important; */
-  background-color: #D9D9D9 !important;
-}
+  background: rgba(0, 0, 0, 0.46) !important;
+  border-right: $border-1 solid $stroke-white-15 !important;
+  color: $text-white-0 !important;
 
-.at-drawer .v-navigation-drawer__content {
-  display: flex;
-  flex-direction: column;
-}
+  .v-navigation-drawer__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
 
-.at-drawer .v-list {
-  margin-bottom: auto;
-}
+  .v-list {
+    width: 100%
+  }
 
-.at-online-block {
-  display: flex;
-  align-items: center;
-  align-self: center;
-  margin-bottom: 20px;
-  justify-content: center;
-  width: 80%;
-  background: #FFFFFF;
-  height: 44px;
-}
+  .v-list-item--active {
+    border-right: 3px solid $primary-green-base;
+    background: rgba(0, 0, 0, 0.13) !important;
 
-.at-online-dot {
-  border: 5px solid #44CF8C;
-  margin-right: 2px;
-  border-radius: 50%;
-}
+    .v-list-item-title {
+      color: $text-white-0 !important;
+    }
+  }
 
-.at-offline-dot {
-  border: 5px solid #FF0000;
-  margin-right: 2px;
-  border-radius: 50%;
-}
+  .v-list-item-title {
+    color: $text-soft-400 !important;
+  }
 
-.at-menu-text {
-  font-style: normal;
-  font-weight: 500;
-  font-size: 16px;
-  line-height: 150%;
-  letter-spacing: -0.011em;
-  color: #0000007c !important;
-}
+  .v-list-item__overlay {
+    background: unset !important;
+    opacity: unset !important;
+  }
 
-.at-menu-text .v-list-item--active {
-  color: #000000 !important;
-}
+  .v-list-item {
+    padding: 0 $spacing-6 !important;
+  }
 
-.at-logo {
-  width: 172px;
-  height: 31px;
-  margin: 20px;
+  .at-logo {
+    height: 30px;
+    width: 172px;
+    margin: $spacing-6 0 $spacing-12 0;
+  }
+
+  .at-online-block {
+    margin-top: auto;
+    display: flex;
+    padding: 10px 18px;
+    width: 128px;
+    gap: 15px;
+    height: 44px;
+    background: rgba(0, 0, 0, 0.15);
+    border: $border-1 solid $stroke-white-15;
+    align-items: baseline;
+    border-radius: $radius-mega;
+    margin-bottom: $spacing-5;
+
+    .at-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .at-online-dot {
+      background: $state-success;
+    }
+
+    .at-offline-dot {
+      background: $state-error;
+    }
+  }
 }
 </style>
-
-
-<!-- <style lang="scss">
-.at-drawer {
-  // width: $drawer-width !important;
-  width: --var(--drawer-width);
-  background: rgba(0, 0, 0, 0.46) !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.19) !important;
-  backdrop-filter: blur(15.65px) !important;
-}
-
-.at-app-bar{
-  background: rgba(0, 0, 0, 0) !important;
-}
-.at-app-bar .v-btn {
-  margin-right: 2px;
-}
-.at-app-bar .v-btn:first-child {
- margin-right: auto;
-}
-
-.at-logo {
-  width: 172px;
-  height: 31px;
-  margin: 20px;
-}
-
-.v-application {
-  background: url('../assets/product_back.jpg') center / cover no-repeat !important;
-
-}
-
-.at-menu-text {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 400;
-  font-size: 16px;
-  line-height: 150%;
-  letter-spacing: -0.011em;
-  color: #FFFFFF;
-  opacity: 0.5;
-}
-
-.at-menu-text-active {
-  opacity: 1;
-}
-
-.at-menu-active {
-  background: rgba(0, 0, 0, 0.13);
-  border-right: 3px solid #44CF8C;
-  border-radius: 0px;
-}
-</style> -->
