@@ -18,17 +18,18 @@ interface CacheOptions {
 }
 
 interface FetchOptions extends CacheOptions {
-  useCache?: boolean;
+  loadCache?: boolean;
+  saveCache?: boolean;
   expirationTime?: number;
 }
 export const useCacheStore = defineStore('cacheStore', {
   actions: {
     async fetchData<T>(
       url: string,
-      options: FetchOptions = { useCache: false, cacheName: 'ApiData', cacheKey: 'default', expirationTime: 5 * 60 * 1000 }
+      options: FetchOptions = { loadCache: false, saveCache: false, cacheName: 'ApiData', cacheKey: 'default', expirationTime: 5 * 60 * 1000 }
     ): Promise<T | null> {
 
-      if (options.useCache) {
+      if (options.loadCache) {
         const cachedData = await this.getCachedData(options.cacheName, options.cacheKey);
         const cacheExpired = await this.isCacheExpired(options.cacheName, options.expirationTime);
         if (cachedData && !cacheExpired) {
@@ -40,7 +41,9 @@ export const useCacheStore = defineStore('cacheStore', {
       try {
         console.log('🔄 Загрузка данных с сервера');
         const response: AxiosResponse<T> = await axios.get(url);
-        await this.cacheData(response.data, { cacheName: options.cacheName, cacheKey: options.cacheKey });
+        if (options.saveCache) {
+          await this.cacheData(response.data, { cacheName: options.cacheName, cacheKey: options.cacheKey });
+        }
         return response.data;
       } catch (err) {
         //FIXME: add error handling
@@ -58,22 +61,19 @@ export const useCacheStore = defineStore('cacheStore', {
       }
     },
 
-    async postData<T>(url: string, payload: any, options: CacheOptions = { cacheName: 'ApiData', cacheKey: 'default' }): Promise<T | null> {
-      this.loading = true;
-      this.error = null;
+    // async postData<T>(url: string, payload: any, options: CacheOptions = { cacheName: 'ApiData', cacheKey: 'default' }): Promise<T | null> {
+    //   this.loading = true;
+    //   this.error = null;
 
-      try {
-        const response: AxiosResponse<T> = await axios.post(url, payload);
-        this.data = response.data;
-        await this.cacheData(response.data, options);
-        return response.data;
-      } catch (err) {
-        //FIXME: add error handling
-        const error = err as any;
-        // this.error = error.response?.data?.message || 'Ошибка при отправке данных';
-        throw err;
-      }
-    },
+    //   try {
+    //     const response: AxiosResponse<T> = await axios.post(url, payload);
+    //     this.data = response.data;
+    //     await this.cacheData(response.data, options);
+    //     return response.data;
+    //   } catch (err) {
+    //     throw err;
+    //   }
+    // },
 
     async cacheData<T>(data: T, options: CacheOptions): Promise<void> {
       await setItem(options.cacheName, options.cacheKey, data);

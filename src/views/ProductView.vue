@@ -2,9 +2,11 @@
   <div>
     <div class="at-app-bar">
       <v-btn variant="tonal" @click="$router.go(-1)">back</v-btn>
-      <v-btn :disabled="!versionStore.isManagerIdle" variant="tonal" @click="selectImported">import</v-btn>
-      <v-btn :disabled="!(versionStore.isInstalled && versionStore.isManagerIdle)" variant="tonal"
-        @click="selectDirectory">export</v-btn>
+      <div v-if="isLicenseActive">
+        <v-btn :disabled="!versionStore.isManagerIdle" variant="tonal" @click="selectImported">import</v-btn>
+        <v-btn :disabled="!(versionStore.isInstalled && versionStore.isManagerIdle)" variant="tonal"
+          @click="selectDirectory">export</v-btn>
+      </div>
       <v-menu location="bottom">
         <template v-slot:activator="{ props }">
           <v-btn v-bind="props" variant="tonal">
@@ -19,7 +21,7 @@
         </v-list>
       </v-menu>
     </div>
-    <div class="at-product-update" v-if="!isLastVersionInstalled">
+    <div class="at-product-update" v-if="isLicenseActive && !isLastVersionInstalled">
       <v-row>
         Доступна новая версия продукта {{ latestVersion.versionStr }}
         <v-btn @click="installLatest">Обновить продукт</v-btn>
@@ -31,7 +33,8 @@
           <v-col>
             <div>{{ product.label }}</div>
             <div>Версия {{ currentVersion.versionStr }}</div>
-            <ProductActionComponent :label="product.label" :version="currentVersion"></ProductActionComponent>
+            <!-- FIXME:-->
+            <ProductActionComponent :label="product.label" :isLicensed="isLicenseActive" :version="currentVersion"></ProductActionComponent>
           </v-col>
         </v-row>
         <v-btn v-if="versionStore.isInstalled" class="mb-2" icon="mdi-play"
@@ -128,7 +131,7 @@ const apiStore = useApiStore();
 const versionStore = useVersionStore();
 
 //@ts-ignore
-const product: Ref<RetrieveSimulatorDto> = ref({
+const product: Ref<RetrieveSimulatorDto & { license: ProductLicense }> = ref({
   id: 0,
   label: 'string',
   firstName: 'string',
@@ -140,6 +143,9 @@ const product: Ref<RetrieveSimulatorDto> = ref({
   mainImage: 'string',
   isFree: true,
   eduSim: true,
+  license: {
+    isBroken: true,
+  },
   versions: [{
     id: 0,
     versionStr: 'string',
@@ -169,6 +175,10 @@ const isLastVersionInstalled = computed(() => {
     return installed.fullVersion == latestVersion.value?.fullName;
   }
   return true;
+});
+
+const isLicenseActive = computed(() => {
+  return !product.value.license.isBroken;
 });
 //temp values
 const sys_info = [

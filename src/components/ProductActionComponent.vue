@@ -1,11 +1,10 @@
 <template>
   <div class="d-flex flex-column at-product-action-comp" style="width:30%">
-    <v-btn v-if="!versionStore.isManagerHandlingVersionDownload" :loading="versionStore.loading"
-      @click="versionStore.action(props.label, props.version.fullName)">
+    <v-btn v-if="!versionStore.isManagerHandlingVersionDownloadOrInstallation" :loading="versionStore.loading" @click="action">
       {{ buttonLabel }}
     </v-btn>
     <div class="d-flex flex-wrap" style="position: relative;"
-      v-if="versionMatchesCurrentOrNone && versionStore.isManagerHandlingVersionDownload">
+      v-if="versionMatchesCurrentOrNone && versionStore.isManagerHandlingVersionDownloadOrInstallation">
       <v-progress-linear color="secondary" v-model="versionStore.productState.progress" :height="42">
         <strong>{{ versionStore.productState.progress }}%</strong>
       </v-progress-linear>
@@ -28,29 +27,41 @@
 import { useVersionStore } from '@/stores/version';
 import { VersionState } from '@/types';
 import { computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { RetrieveVersionDto } from '../../../agrotech-back/shared';
 
 const versionStore = useVersionStore();
 
-
-const props = defineProps<{ version: RetrieveVersionDto, label: string }>()
+const router = useRouter();
+const props = defineProps<{ version: RetrieveVersionDto, label: string, isLicensed: boolean }>()
 
 
 const buttonLabel = computed(() => {
-  switch (versionStore.productState.state) {
-    case VersionState.NotInstalled:
-      return 'Загрузить';
-    case VersionState.Downloaded:
-      return 'Установить';
-    case VersionState.Installed:
-      return 'Удалить';
+  if (props.isLicensed) {
+    switch (versionStore.productState.state) {
+      case VersionState.NotInstalled:
+        return 'Загрузить';
+      case VersionState.Downloaded:
+        return 'Установить';
+      case VersionState.Installed:
+        return 'Удалить';
+    }
+  } else {
+    return 'Активировать';
   }
+
 })
 
 const versionMatchesCurrentOrNone = computed(() => {
   return !versionStore.managerState.currentHandlingVersion || versionStore.managerState.currentHandlingVersion == props.version.fullName;
 })
 
-
+const action = () => {
+  if (props.isLicensed) {
+    versionStore.action(props.label, props.version.fullName);
+  } else {
+    router.push({ path: 'codes' });
+  }
+}
 </script>
 <style></style>

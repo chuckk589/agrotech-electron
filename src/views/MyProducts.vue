@@ -17,12 +17,10 @@ const ownedProducts = ref([]);
 onMounted(async () => {
   await apiStore.fetchProducts();
 
-  const _ownedProducts = await window.vmanager.getInstalledProducts();
+  const _installedProducts = await window.vmanager.getInstalledProducts();
 
   ownedProducts.value = apiStore.products.filter(product => {
-    return _ownedProducts.some((ownedProduct: ProductDetails) => {
-      return ownedProduct.productName == product.label;
-    });
+    return _installedProducts.some((ownedProduct: ProductDetails) => ownedProduct.productName == product.label) || !product.license.isBroken;
   });
 });
 
