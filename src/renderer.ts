@@ -5,7 +5,7 @@ import vuetify from './plugins/vuetify';
 import { router } from './router/index';
 import { useErrorStore } from './stores/error';
 import { useVersionStore } from './stores/version';
-import './styles/main.scss';
+// import './styles/main.scss';
 
 const app = createApp(App);
 app.use(vuetify);
