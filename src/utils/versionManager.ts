@@ -198,14 +198,6 @@ class VersionManager {
 
             const fullPath = this.getCurrentVersionTempPath();
 
-            // fs
-            //     .createReadStream(zipPath)
-            //     .pipe(unzipper.Extract({ path: this.getCurrentVersionPath() }))
-            //     .promise()
-            //     .then(() => {
-            //         this.changeStatus(VersionManagerState.Idle);
-            //         resolve()
-            //     });
             const directory = await unzipper.Open.file(fullPath);
 
             await this.extractZip(directory, this.getCurrentVersionPath());
@@ -250,6 +242,8 @@ class VersionManager {
 
         let lastUpdate = Date.now();
 
+        this.pruneDestinationFolder(destination);
+
         for (const file of directory.files) {
             const outputPath = `${destination}/${file.path}`;
             if (file.type == 'File') {
@@ -263,7 +257,7 @@ class VersionManager {
                         extractedBytes += chunk.length;
 
                         if (now - lastUpdate >= interval) {
-                            const progress = ((extractedBytes / totalBytes) * 100);
+                            const progress = Math.round((extractedBytes / totalBytes) * 1000) / 10;
                             lastUpdate = now;
                             this.emit(VersionManagerEvent.UnpackingProgress, progress);
                         }
@@ -293,7 +287,7 @@ class VersionManager {
 
                 // const finalPath = path.join(this.basePath, productName, fullVersion);
                 const finalPath = this.getCurrentVersionPath();
-
+                //FIXME:
                 if (fs.existsSync(finalPath)) {
                     fs.rm(finalPath, { recursive: true }, (err) => {
                         if (err) {
@@ -325,6 +319,8 @@ class VersionManager {
                 const output = fs.createWriteStream(fileFullPath);
                 const archive = archiver('zip', { zlib: { level: 9 } });
 
+                const totalSize = this.getFolderSize(folderPath);
+
                 output.on('close', () => {
                     this.changeStatus(VersionManagerState.Idle);
                     resolve();
@@ -332,6 +328,11 @@ class VersionManager {
 
                 archive.on('error', reject);
                 archive.pipe(output);
+
+                archive.on('progress', (progress) => {
+                    const percent = Math.round((progress.fs.processedBytes / totalSize) * 1000) / 10;
+                    this.emit(VersionManagerEvent.UnpackingProgress, percent);
+                });
 
                 archive.directory(folderPath, false);
 
@@ -353,6 +354,12 @@ class VersionManager {
         if (fs.existsSync(tempFilePath)) {
             fs.unlinkSync(tempFilePath);
         }
+    }
+    private pruneDestinationFolder(destination: string): void {
+        if (fs.existsSync(destination)) {
+            fs.rmSync(destination, { recursive: true, force: true });
+        }
+        fs.mkdirSync(destination, { recursive: true });
     }
     pauseDownload(): void {
         if (this.currentHandlingVersion.controller) {
@@ -423,6 +430,24 @@ class VersionManager {
         }
 
         return path.join(productPath, executable);
+    }
+    private getFolderSize(folderPath: string) {
+        let totalSize = 0;
+
+        const files = fs.readdirSync(folderPath);
+
+        for (const file of files) {
+            const filePath = path.join(folderPath, file);
+            const stats = fs.statSync(filePath);
+
+            if (stats.isDirectory()) {
+                totalSize += this.getFolderSize(filePath);
+            } else {
+                totalSize += stats.size;
+            }
+        }
+
+        return totalSize;
     }
     // VERSIONING
     private readonly metaFileName = 'meta.json';

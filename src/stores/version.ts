@@ -15,11 +15,11 @@ export const useVersionStore = defineStore('versionStore', {
         managerState: { state: VersionManagerState.Idle, currentHandlingVersion: '' },
         productMeta: { totalSizeBytes: 0, rate: '' },
         installedProducts: [] as ProductDetails[],
+        fileManagerState: { progress: 0 }
     }),
 
     actions: {
         async initializeStore() {
-
             window.vmanager.on(VersionManagerEvent.DownloadProgress, (progressDetails: { bytesLeft: number, rate: number }) => {
                 this.productState.progress = Math.round((1 - progressDetails.bytesLeft / this.productMeta.totalSizeBytes) * 100);
                 this.productMeta.rate = (progressDetails.rate / 1024 / 1024).toFixed(2);
@@ -31,7 +31,7 @@ export const useVersionStore = defineStore('versionStore', {
                 }
             })
             window.vmanager.on(VersionManagerEvent.UnpackingProgress, (progress: number) => {
-                this.productState.progress = progress;
+                this.fileManagerState.progress = progress;
             })
 
             await this.refreshInstalledProducts()
@@ -130,8 +130,11 @@ export const useVersionStore = defineStore('versionStore', {
         }
     },
     getters: {
-        isManagerHandlingVersionDownloadOrInstallation(state) {
-            return state.productState.state == VersionState.PartlyDownloaded || [VersionManagerState.Installing, VersionManagerState.Downloading, VersionManagerState.Paused].includes(state.managerState.state)
+        isManagerHandlingVersionDownload(state) {
+            return state.productState.state == VersionState.PartlyDownloaded || [VersionManagerState.Downloading, VersionManagerState.Paused].includes(state.managerState.state)
+        },
+        isManagerHandlingFile(state) {
+            return [VersionManagerState.Installing, VersionManagerState.Packing].includes(state.managerState.state);
         },
         isManagerIdle(state) {
             return [VersionManagerState.Idle, VersionManagerState.Errored, VersionManagerState.Paused].includes(state.managerState.state);

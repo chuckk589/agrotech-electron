@@ -1,10 +1,10 @@
 <template>
   <div class="d-flex flex-column at-product-action-comp" style="width:30%">
-    <v-btn v-if="!versionStore.isManagerHandlingVersionDownloadOrInstallation" :loading="versionStore.loading" @click="action">
+    <v-btn v-if="versionStore.isManagerIdle" :loading="versionStore.loading" @click="action">
       {{ buttonLabel }}
     </v-btn>
     <div class="d-flex flex-wrap" style="position: relative;"
-      v-if="versionMatchesCurrentOrNone && versionStore.isManagerHandlingVersionDownloadOrInstallation">
+      v-if="versionMatchesCurrentOrNone && versionStore.isManagerHandlingVersionDownload">
       <v-progress-linear color="secondary" v-model="versionStore.productState.progress" :height="42">
         <strong>{{ versionStore.productState.progress }}%</strong>
       </v-progress-linear>
@@ -19,6 +19,11 @@
       <div v-if="versionStore.isDownloading">
         <strong> {{ versionStore.productMeta.rate }} MB/s</strong>
       </div>
+    </div>
+    <div v-if="versionMatchesCurrentOrNone && versionStore.isManagerHandlingFile">
+      <v-progress-linear color="secondary" v-model="versionStore.fileManagerState.progress" :height="42">
+        <strong>{{ versionStore.fileManagerState.progress }}%</strong>
+      </v-progress-linear>
     </div>
   </div>
 </template>
