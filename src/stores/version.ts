@@ -8,7 +8,7 @@ export type VersionMetaData = {
     sizeBytes: number;
 }
 
-export const useVersionStore = defineStore('versionStore', {
+ const useVersionStore = defineStore('versionStore', {
     state: () => ({
         loading: false,
         productState: { progress: 0, state: VersionState.NotInstalled },

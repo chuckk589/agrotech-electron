@@ -2,28 +2,28 @@
   <div>
     <div class="at-app-bar">
       <v-btn variant="tonal" @click="$router.go(-1)">back</v-btn>
-      <div v-if="isLicenseActive">
-        <v-btn :disabled="!versionStore.isManagerIdle" variant="tonal" @click="selectImported">import</v-btn>
-        <v-btn :disabled="!(versionStore.isInstalled && versionStore.isManagerIdle)" variant="tonal"
+      <div v-if="productStore.hasActiveLicense">
+        <v-btn :disabled="!managerStore.isManagerIdle" variant="tonal" @click="selectImported">import</v-btn>
+        <v-btn :disabled="!(productStore.isInstalled && managerStore.isManagerIdle)" variant="tonal"
           @click="selectDirectory">export</v-btn>
       </div>
       <v-menu location="bottom">
         <template v-slot:activator="{ props }">
           <v-btn v-bind="props" variant="tonal">
-            {{ currentVersion.versionStr }}
+            {{ productStore.activeVersion.versionStr }}
           </v-btn>
         </template>
 
         <v-list @update:selected="switchVersion">
-          <v-list-item v-for="version in versionList" :key="version.id" :value="version.id">
+          <v-list-item v-for="version in productStore.versions" :key="version.id" :value="version.id">
             <v-list-item-title>{{ version.versionStr }}</v-list-item-title>
           </v-list-item>
         </v-list>
       </v-menu>
     </div>
-    <div class="at-product-update" v-if="isLicenseActive && !isLastVersionInstalled">
+    <div class="at-product-update" v-if="productStore.hasActiveLicense && !productStore.isLastVersionInstalled">
       <v-row>
-        Доступна новая версия продукта {{ latestVersion.versionStr }}
+        Доступна новая версия продукта {{ productStore.latestVersion.versionStr }}
         <v-btn @click="installLatest">Обновить продукт</v-btn>
       </v-row>
     </div>
@@ -31,14 +31,12 @@
       <div class="at-product-header">
         <v-row>
           <v-col>
-            <div>{{ product.label }}</div>
-            <div>Версия {{ currentVersion.versionStr }}</div>
-            <!-- FIXME:-->
-            <ProductActionComponent :label="product.label" :isLicensed="isLicenseActive" :version="currentVersion"></ProductActionComponent>
+            <div>{{ productStore.activeProduct.label }}</div>
+            <div>Версия {{ productStore.activeVersion.versionStr }}</div>
+            <ProductActionComponent/>
           </v-col>
         </v-row>
-        <v-btn v-if="versionStore.isInstalled" class="mb-2" icon="mdi-play"
-          @click="versionStore.launch(product.label, currentVersion.fullName)"></v-btn>
+        <v-btn v-if="productStore.isInstalled" class="mb-2" icon="mdi-play" @click="productStore.launchVersion"></v-btn>
       </div>
       <div>
         <v-tabs v-model="tab" align-tabs="start">
@@ -53,7 +51,7 @@
               <v-row>
                 <v-col>
                   <v-card-text>
-                    {{ product.description }}
+                    {{ productStore.activeProduct.description }}
                   </v-card-text>
                   <v-card-text class="at-product-info">
                     <div v-for="sys_info in sys_info" :key="sys_info">{{ sys_info }}</div>
@@ -67,20 +65,20 @@
                   <v-card class="at-product-specs h-100">
                     <v-tabs v-model="tab_spec" align-tabs="start">
                       <v-tab :value="1">Системные требования</v-tab>
-                      <v-tab :value="2">Что нового в версии {{ currentVersion.versionStr }}</v-tab>
+                      <v-tab :value="2">Что нового в версии {{ productStore.activeVersion.versionStr }}</v-tab>
                     </v-tabs>
                     <v-tabs-window v-model="tab_spec">
                       <v-tabs-window-item :value="1">
                         <v-card>
                           <v-card-text>Системные требования (для большинства современных игр):</v-card-text>
                           <v-card-text class="at-product-sysreq">
-                            {{ currentVersion.sys_req }}
+                            {{ productStore.activeVersion.sys_req }}
                           </v-card-text>
                         </v-card>
                       </v-tabs-window-item>
                       <v-tabs-window-item :value="2">
                         <v-card-text>
-                          {{ currentVersion.patchNote }}
+                          {{ productStore.activeVersion.patchNote }}
                         </v-card-text>
                       </v-tabs-window-item>
                     </v-tabs-window>
@@ -90,7 +88,7 @@
               <v-row>
                 <div>Фото продукта</div>
                 <v-slide-group show-arrows class="at-product-slider">
-                  <v-slide-group-item v-for="photo in images" :key="photo">
+                  <v-slide-group-item v-for="photo in productStore.activeProductImages" :key="photo">
                     <img :src="photo" alt="product">
                   </v-slide-group-item>
                 </v-slide-group>
@@ -104,7 +102,7 @@
           </v-tabs-window-item>
           <v-tabs-window-item :value="3">
             <div class="at-manual-block">
-              <ManualCard v-for="manual in currentVersion.manuals" :key="manual.id" :manual="manual" />
+              <ManualCard v-for="manual in productStore.activeVersion.manuals" :key="manual.id" :manual="manual" />
             </div>
           </v-tabs-window-item>
         </v-tabs-window>
@@ -115,71 +113,70 @@
 </template>
 
 <script setup lang="ts">
-import { useApiStore } from '@/stores/api';
-import { computed, onMounted, Ref, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { RetrieveSimulatorDto, RetrieveVersionDto } from '../../../agrotech-back/shared';
 import ManualCard from '../components/ManualCard.vue';
 import NewsCard from '../components/NewsCard.vue';
 
-import { useVersionStore } from '@/stores/version';
+import { useManagerStore } from '@/stores/managerStore';
+import { useProductStore } from '@/stores/productStore';
 import ProductActionComponent from '../components/ProductActionComponent.vue';
 //@ts-ignore
 const API_URL = import.meta.env.VITE_API_URL;
 const route = useRoute();
-const apiStore = useApiStore();
-const versionStore = useVersionStore();
+const productStore = useProductStore();
+const managerStore = useManagerStore();
+// const productStore = useproductStore();
 
 //@ts-ignore
-const product: Ref<RetrieveSimulatorDto & { license: ProductLicense }> = ref({
-  id: 0,
-  label: 'string',
-  firstName: 'string',
-  secondName: 'string',
-  description: 'string',
-  productKey: 1,
-  productNumber: 1,
-  icon: 'string',
-  mainImage: 'string',
-  isFree: true,
-  eduSim: true,
-  license: {
-    isBroken: true,
-  },
-  versions: [{
-    id: 0,
-    versionStr: 'string',
-    manuals: []
-  }],
-  images: [],
-});
+// const product: Ref<RetrieveSimulatorDto & { license: ProductLicense }> = ref({
+//   id: 0,
+//   label: 'string',
+//   firstName: 'string',
+//   secondName: 'string',
+//   description: 'string',
+//   productKey: 1,
+//   productNumber: 1,
+//   icon: 'string',
+//   mainImage: 'string',
+//   isFree: true,
+//   eduSim: true,
+//   license: {
+//     isBroken: true,
+//   },
+//   versions: [{
+//     id: 0,
+//     versionStr: 'string',
+//     manuals: []
+//   }],
+//   images: [],
+// });
 
 const tab = ref(1);
 const tab_spec = ref(1);
 
-const product_id = +route.query.product_id;
-const currentVersionIdx = ref(0);
+// const product_id = +route.query.product_id;
+// const currentVersionIdx = ref(0);
 
-const versionList = ref<RetrieveVersionDto[]>([]);
-const currentVersion = ref<RetrieveVersionDto>({} as any);
+// const versionList = ref<RetrieveVersionDto[]>([]);
+// const currentVersion = ref<RetrieveVersionDto>({} as any);
 
-// const latestVersion = computed(() => product.value.versions[product.value.versions.length - 1].versionStr);
-const latestVersion = ref<RetrieveVersionDto>({ versionStr: 'string' } as any);
+// const latestVersion = ref<RetrieveVersionDto>({ versionStr: 'string' } as any);
 
 
-const images = computed(() => product.value.images.map((image) => new URL(image, API_URL).href));
+// const images = computed(() => product.value.images.map((image) => new URL(image, API_URL).href));
 
-const isLastVersionInstalled = computed(() => {
-  const installed = versionStore.installedProducts.find((installedP) => installedP.productName == product.value.label);
-  if (installed) {
-    return installed.fullVersion == latestVersion.value?.fullName;
-  }
-  return true;
-});
+// const isLastVersionInstalled = computed(() => {
+//   const installed = productStore.installedProducts.find((installedP) => installedP.productName == product.value.label);
+//   if (installed) {
+//     return installed.fullVersion == latestVersion.value?.fullName;
+//   }
+//   return true;
+// });
 
-const isLicenseActive = computed(() => {
-  return !product.value.license.isBroken;
-});
+// const isLicenseActive = computed(() => {
+//   return !product.value.license.isBroken;
+// });
 //temp values
 const sys_info = [
   "Размер  приложения: 3.5 ГБ.",
@@ -199,56 +196,59 @@ const news = [{
 }]
 
 onMounted(async () => {
-  const entry = apiStore.products.find(product => product.id == product_id);
+  // const entry = apiStore.products.find(product => product.id == product_id);
 
-  if (entry) {
+  // if (entry) {
 
-    const fullVersioonInstalled = versionStore.installedProducts.find((product) => product.productName == entry.label);
+  //   const fullVersioonInstalled = productStore.installedProducts.find((product) => product.productName == entry.label);
 
-    let currentVersionId = null;
+  //   let currentVersionId = null;
 
-    if (fullVersioonInstalled) {
-      currentVersionId = entry.versions.find((version) => version.fullName == fullVersioonInstalled.fullVersion)?.id;
-    } else {
-      currentVersionId = entry.versions[0].id;
-    }
-    console.log(`OnMounted, fullVersioonInstalled: ${fullVersioonInstalled?.fullVersion}, currentVersionId: ${currentVersionId}`);
+  //   if (fullVersioonInstalled) {
+  //     currentVersionId = entry.versions.find((version) => version.fullName == fullVersioonInstalled.fullVersion)?.id;
+  //   } else {
+  //     currentVersionId = entry.versions[0].id;
+  //   }
+  //   console.log(`OnMounted, fullVersioonInstalled: ${fullVersioonInstalled?.fullVersion}, currentVersionId: ${currentVersionId}`);
 
-    //TODO: implement version check
-    latestVersion.value = entry.versions[0];
+  //   //TODO: implement version check
+  //   latestVersion.value = entry.versions[0];
 
-    product.value = entry;
-    await switchVersion(currentVersionId);
-  }
+  //   product.value = entry;
+  //   await switchVersion(currentVersionId);
+  // }
 });
 const installLatest = async () => {
-  await switchVersion(latestVersion.value.id);
-  await versionStore.action(product.value.label, currentVersion.value.fullName);
+  await switchVersion(productStore.latestVersion.id);
+  await productStore.versionAction();
 }
 
+// const switchVersion = async (id: number) => {
+//   const version = product.value.versions.find((version) => version.id == id);
+//   if (version) {
+//     currentVersion.value = version;
+//     currentVersionIdx.value = id;
+//     versionList.value = product.value.versions.filter((version) => version.id != id);
+//     await productStore.refreshVersionState({ productName: product.value.label, fullVersion: version.fullName });
+//     console.log(productStore.managerState, productStore.productState, productStore.productMeta);
+//   }
+// }
 const switchVersion = async (id: number) => {
-  const version = product.value.versions.find((version) => version.id == id);
-  if (version) {
-    currentVersion.value = version;
-    currentVersionIdx.value = id;
-    versionList.value = product.value.versions.filter((version) => version.id != id);
-    await versionStore.refreshVersionState({ productName: product.value.label, fullVersion: version.fullName });
-    console.log(versionStore.managerState, versionStore.productState, versionStore.productMeta);
-  }
+  productStore.setActiveVersion(id);
 }
 
-//export / import 
+// //export / import 
 const selectDirectory = async () => {
   const selectedPath = await window.filesystem.openDirectoryDialog('openDirectory');
   if (selectedPath) {
-    await versionStore.startExport(product.value.label, currentVersion.value.fullName, selectedPath);
+    await productStore.startExport(selectedPath);
   }
 };
 
 const selectImported = async () => {
   const selectedPath = await window.filesystem.openDirectoryDialog('openFile');
   if (selectedPath) {
-    await versionStore.startImport(selectedPath);
+    await productStore.startImport(selectedPath);
   }
 };
 </script>

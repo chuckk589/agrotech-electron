@@ -1,22 +1,30 @@
 <template>
-    <v-card variant="flat" class="at-product-card"
-        :to="{ name: 'product', query: { product_id: product.id } }">
-        <v-card-title>{{ product.label }}</v-card-title>
-        <v-card-text>{{ product.description }}</v-card-text>
+    <v-card variant="flat" class="at-product-card">
+        <v-card-title>{{ label }}</v-card-title>
+        <v-card-text>{{ description }}</v-card-text>
         <v-card-actions>
-            <v-btn variant="tonal">action</v-btn>
+            <v-btn @click="switchProduct" variant="tonal">Подробнее</v-btn>
         </v-card-actions>
     </v-card>
 </template>
 
 <script setup lang="ts">
-import { RetrieveSimulatorDto } from '../../../agrotech-back/shared';
+import { useProductStore } from '@/stores/productStore';
+import { useRouter } from 'vue-router';
 
-defineProps<{
-    product: RetrieveSimulatorDto;
+const router = useRouter();
+const productStore = useProductStore();
+
+const props = defineProps<{
+    product_id: number;
+    label: string;
+    description: string;
 }>();
 
-
+const switchProduct = () => {
+    productStore.setActiveProduct(props.product_id);
+    router.push({ name: 'product' });
+};
 </script>
 <style>
 .at-product-card {

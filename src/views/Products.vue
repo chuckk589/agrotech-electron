@@ -1,18 +1,24 @@
 <template>
   <div class="at-products-container">
-    <ProductCard v-for="product in apiStore.products" :key="product.id" :product="product" />
+    <ProductCard 
+      v-for="product in productStore.products" 
+      :key="product.id" 
+      :product_id="product.id"
+      :label ="product.label"
+      :description="product.description"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { useApiStore } from '@/stores/api';
+import { useProductStore } from '@/stores/productStore';
 import { onMounted } from 'vue';
 import ProductCard from '../components/ProductCard.vue';
 
-const apiStore = useApiStore();
+const productStore = useProductStore();
 
 const loadData = async () => {
-  await apiStore.fetchProducts();
+  await productStore.fetchProducts();
 };
 
 

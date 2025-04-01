@@ -1,9 +1,10 @@
 // stores/apiStore.ts
-import { RetrieveSimulatorWithLicenseDto } from '@/types';
+import { ProductDetails, RetrieveSimulatorWithLicenseDto, VersionState } from '@/types';
 import { defineStore } from 'pinia';
-import { RetrieveSimulatorDto } from '../../../agrotech-back/shared';
+import { RetrieveSimulatorDto, RetrieveVersionDto } from '../../../agrotech-back/shared';
 import { STORE_API } from '../db/constants';
 import { useCacheStore } from './cache';
+import { useManagerStore } from './managerStore';
 
 //@ts-ignore
 const API_URL = import.meta.env.VITE_API_URL;
@@ -256,32 +257,149 @@ const licenseResponse = {
         }
     ]
 }
-export const useApiStore = defineStore('apiStore', {
+export const useProductStore = defineStore('product', {
     state: () => ({
         loading: false,
-        error: null as string | null,
         products: [] as RetrieveSimulatorWithLicenseDto[],
+        activeProduct: {} as RetrieveSimulatorWithLicenseDto,
+        versions: [] as RetrieveVersionDto[],
+        activeVersion: {} as RetrieveVersionDto,
+        latestVersion: {} as RetrieveVersionDto,
+        versionMeta: { state: VersionState.NotInstalled, totalSizeBytes: 0 },
     }),
-
+    getters: {
+   
+        isInstalled(state) {
+            return state.versionMeta.state == VersionState.Installed;
+        },
+        isLastVersionInstalled(state) {
+            const managerStore = useManagerStore();
+            const installedProduct = managerStore.installedProducts.find((installedP) => installedP.productName == state.activeProduct.label);
+            if (!installedProduct) {
+                return true;
+            }
+            return installedProduct.fullVersion == state.latestVersion.fullName;
+        },
+        isVersionNotLoaded(state) {
+            return state.versionMeta.state == VersionState.PartlyDownloaded || state.versionMeta.state == VersionState.NotInstalled;
+        },
+        hasActiveLicense(state): boolean {
+            if (state.activeProduct) {
+                return state.activeProduct.license.isBroken == false;
+            }
+            return false;
+        },
+        activeProductImages(state): string[] {
+            if (state.activeProduct) {
+                return state.activeProduct.images.map((image) => new URL(image, API_URL).href);
+            }
+            return [];
+        }
+    },
     actions: {
+        setActiveVersion(version_id: number) {
+            const version = this.versions.find(v => v.id == version_id);
+            if (version) {
+                this.activeVersion = version;
+            }
+        },
+        async setActiveProduct(product_id: number) {
+            this.activeProduct = this.products.find((product: RetrieveSimulatorWithLicenseDto) => product.id == product_id) || null;
+            if (this.activeProduct) {
+                this.versions = this.activeProduct.versions;
+                //try to find installed among the versions
+                const managerStore = useManagerStore();
+                const installedProduct = managerStore.installedProducts.find((product) => product.productName == this.activeProduct.label);
+                if (installedProduct) {
+                    this.activeVersion = this.versions.find(v => v.fullName == installedProduct.fullVersion);
+                } else {
+                    this.activeVersion = this.versions[0];
+                }
+                this.latestVersion = this.versions[0];
+            }
+        },
+        async startExport(selectedPath: string) {
+            this.loading = true;
+            await window.vmanager.exportProduct({ productName: this.activeProduct.label, fullVersion: this.activeVersion.fullName }, selectedPath);
+            this.loading = false;
+        },
+        async startImport(fullPath: string) {
+            this.loading = true;
+            await window.vmanager.importProduct(fullPath);
+            await this.refreshInstalledProducts();
+            this.loading = false
+        },
+        async startUninstall(productName: string, fullVersion: string) {
+            this.loading = true;
+            await window.vmanager.startUninstall({ productName, fullVersion });
+            await this.refreshInstalledProducts();
+            this.loading = false
+        },
+        async startDownload() {
+            this.loading = true;
+
+            const response = await window.vmanager.startDownload({ productName: this.activeProduct.label, fullVersion: this.activeVersion.fullName });
+            // await this.updateVersionMetadata(fullVersion, response);
+            this.loading = false;
+        },
+        async pauseDownload() {
+            this.loading = true;
+            await window.vmanager.pauseDownload();
+            this.loading = false;
+        },
+        async resumeDownload() {
+            this.loading = true;
+            await window.vmanager.resumeDownload();
+            this.loading = false;
+        },
+        async cancelDownload() {
+            this.loading = true;
+            await window.vmanager.cancelDownload({ productName: this.activeProduct.label, fullVersion: this.activeVersion.fullName });
+            this.loading = false;
+        },
+        async startInstall() {
+            this.loading = true;
+            await window.vmanager.startInstall({ productName: this.activeProduct.label, fullVersion: this.activeVersion.fullName });
+            await this.refreshInstalledProducts();
+            this.loading = false;
+        },
+        async launchVersion() {
+            this.loading = true;
+
+            await window.vmanager.launchProduct({ productName: this.activeProduct.label, fullVersion: this.activeVersion.fullName });
+            this.loading = false;
+        },
+        async startUpdate() {
+            const managerStore = useManagerStore();
+
+            const installedProduct = managerStore.installedProducts.find((p: ProductDetails) => p.productName == this.activeProduct.label);
+
+            if (installedProduct) {
+                await this.startUninstall(this.activeProduct.label, installedProduct.fullVersion);
+            }
+
+            await this.startDownload();
+        },
+        async versionAction() {
+            if (this.isVersionNotLoaded) {
+                await this.startUpdate();
+            } else if (this.versionMeta.state == VersionState.Downloaded) {
+                await this.startInstall();
+            } else if (this.versionMeta.state == VersionState.Installed) {
+                await this.startUninstall(this.activeProduct.label, this.activeVersion.fullName);
+            }
+        },
+        async refreshInstalledProducts() {
+            const managerStore = useManagerStore();
+            await managerStore.refreshInstalledProducts();
+        },
         async fetchProducts() {
             const apiCache = useCacheStore();
-            this.loading = true;
-            try {
-                const data = await apiCache.fetchData<RetrieveSimulatorDto[]>(API_URL + '/simulators', { loadCache: true, cacheName: STORE_API, cacheKey: 'products', expirationTime: 60 * 1000 });
-                if (data) {
-                    const populated = this.populateProductLicenses(data);
-                    this.products = populated;
-                    await apiCache.cacheData(populated, { cacheName: STORE_API, cacheKey: 'products' });
-                }
-                else {
-                    this.error = 'Не удалось загрузить продукты.';
-
-                }
-            } catch (error) {
-                this.error = 'Ошибка при получении продуктов.';
-            } finally {
-                this.loading = false;
+            const data = await apiCache.fetchData<RetrieveSimulatorDto[]>(API_URL + '/simulators', { loadCache: true, cacheName: STORE_API, cacheKey: 'products', expirationTime: 60 * 1000 });
+            if (data) {
+                const populated = this.populateProductLicenses(data);
+                this.products = populated;
+                await apiCache.cacheData(populated, { cacheName: STORE_API, cacheKey: 'products' });
             }
         },
         populateProductLicenses(data: RetrieveSimulatorDto[]): RetrieveSimulatorWithLicenseDto[] {

@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { useApiStore } from '@/stores/api';
+import { useApiStore } from '@/stores/productStore';
 import { ProductDetails } from '@/types';
 import { onMounted, ref } from 'vue';
 import ProductCard from '../components/ProductCard.vue';
