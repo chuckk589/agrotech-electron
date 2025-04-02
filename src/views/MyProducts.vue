@@ -1,26 +1,26 @@
 <template>
   <div class="at-myproducts-container">
-    <ProductCard v-for="product in ownedProducts" :key="product.name" :product="product" />
+    <ProductCard v-for="product in ownedProducts" :key="product.id" :product_id="product.id" :label="product.label"
+      :description="product.description" />
   </div>
 </template>
 
 <script setup lang="ts">
+import { useManagerStore } from '@/stores/managerStore';
 import { useProductStore } from '@/stores/productStore';
 import { ProductDetails } from '@/types';
 import { onMounted, ref } from 'vue';
 import ProductCard from '../components/ProductCard.vue';
 
 const productStore = useProductStore();
-
+const managerStore = useManagerStore();
 const ownedProducts = ref([]);
 
 onMounted(async () => {
   await productStore.fetchProducts();
 
-  const _installedProducts = await window.vmanager.getInstalledProducts();
-
   ownedProducts.value = productStore.products.filter(product => {
-    return _installedProducts.some((ownedProduct: ProductDetails) => ownedProduct.productName == product.label) || !product.license.isBroken;
+    return managerStore.installedProducts.some((ownedProduct: ProductDetails) => ownedProduct.productName == product.label) || !product.license.isBroken;
   });
 });
 

@@ -34,7 +34,7 @@ export const useManagerStore = defineStore('manager', {
             //     this.fileManagerState.progress = progress;
             // })
 
-            // await this.refreshInstalledProducts()
+            await this.refreshInstalledProducts()
         },
         //STATES
         async updateManagerState() {
