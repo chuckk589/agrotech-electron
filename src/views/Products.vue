@@ -1,18 +1,11 @@
 <template>
-  <div class="at-products-container">
-    <ProductCard 
-      v-for="product in productStore.products" 
-      :key="product.id" 
-      :product_id="product.id"
-      :label ="product.label"
-      :description="product.description"
-    />
   <div>
     <v-app-bar height="80" :elevation="0" class="at-product-bar">
       <v-toolbar-title>Продукты</v-toolbar-title>
     </v-app-bar>
     <div class="at-products-container">
-      <ProductCard v-for="product in apiStore.products" :key="product.id" :product="product" />
+      <ProductCard v-for="product in productStore.products" :key="product.id" :product_id="product.id"
+        :label="product.label" :description="product.description" />
     </div>
   </div>
 </template>
@@ -40,18 +33,19 @@ onMounted(loadData);
   flex-wrap: wrap;
   gap: 10px;
 
- 
+
 }
+
 .at-product-bar {
-    display: flex;
-    align-items: center;
-    background: rgba($bg-soft-600, 0.87) !important;
-    border-bottom: $border-1 solid $stroke-white-15 !important;
+  display: flex;
+  align-items: center;
+  background: rgba($bg-soft-600, 0.87) !important;
+  border-bottom: $border-1 solid $stroke-white-15 !important;
 
-    color: $text-white-0 !important;
+  color: $text-white-0 !important;
 
-    .v-toolbar-title {
-      margin-left: $spacing-6;
-    }
+  .v-toolbar-title {
+    margin-left: $spacing-6;
   }
+}
 </style>
