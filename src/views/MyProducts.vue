@@ -5,21 +5,21 @@
 </template>
 
 <script setup lang="ts">
-import { useApiStore } from '@/stores/productStore';
+import { useProductStore } from '@/stores/productStore';
 import { ProductDetails } from '@/types';
 import { onMounted, ref } from 'vue';
 import ProductCard from '../components/ProductCard.vue';
 
-const apiStore = useApiStore();
+const productStore = useProductStore();
 
 const ownedProducts = ref([]);
 
 onMounted(async () => {
-  await apiStore.fetchProducts();
+  await productStore.fetchProducts();
 
   const _installedProducts = await window.vmanager.getInstalledProducts();
 
-  ownedProducts.value = apiStore.products.filter(product => {
+  ownedProducts.value = productStore.products.filter(product => {
     return _installedProducts.some((ownedProduct: ProductDetails) => ownedProduct.productName == product.label) || !product.license.isBroken;
   });
 });
