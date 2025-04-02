@@ -2,12 +2,14 @@ import archiver from 'archiver';
 import axios, { AxiosProgressEvent, AxiosRequestConfig } from 'axios';
 import child from 'child_process';
 import { app } from 'electron';
+import Store from 'electron-store';
 import { default as fs } from 'fs';
 import { throttle } from 'lodash';
 import path from 'path';
 import unzipper from 'unzipper';
-import { ProductDetails, VersionManagerEvent, VersionManagerEventHandler, VersionManagerState, VersionManagerStats, VersionState, VersionStats } from '../types';
+import { ProductDetails, ProductMetaData, VersionManagerEvent, VersionManagerEventHandler, VersionManagerState, VersionManagerStats, VersionState, VersionStats } from '../types';
 
+const PRODUCT_STORE = 'products';
 class VersionManager {
 
     /**
@@ -19,22 +21,18 @@ class VersionManager {
     private readonly tempPath: string;
     private state: VersionManagerState = VersionManagerState.Idle;
 
+    private store = new Store<ProductMetaData>();
+
     private currentHandlingVersion: {
         fullVersion: string;
         productName: string;
         url: string;
         controller: AbortController | null;
     }
-    // onStatusChange: (options: ProductDetails, status: VersionManagerState) => void;
-    // onDownloadProgress: (progressDetails: { bytesLeft: number, rate: number }) => void;
-    // on<T extends VersionManagerEvent>(event: T, listener: VersionManagerEventHandler[T]): this {
-
-    // }
 
     emit<T extends VersionManagerEvent>(event: T, ...args: Parameters<VersionManagerEventHandler[T]>) { }
 
     constructor() {
-
 
         this.basePath = path.join(app.getPath('userData'), 'products');
         this.tempPath = path.join(app.getPath('userData'), 'temp');
@@ -47,6 +45,26 @@ class VersionManager {
         if (!fs.existsSync(this.tempPath)) {
             fs.mkdirSync(this.tempPath, { recursive: true });
         }
+
+    }
+    //STORE
+    private getStoreProductData(productName: string, fullVersion: string): ProductMetaData {
+        const products: ProductMetaData[] = this.store.get(PRODUCT_STORE) || [];
+        const product = products.find((product) => product.productName == productName && product.fullVersion == fullVersion);
+        return product
+    }
+    private setStoreProductData(data: ProductMetaData): void {
+        const products: ProductMetaData[] = this.store.get(PRODUCT_STORE) || [];
+
+        const index = products.findIndex((product) => product.productName == data.productName && product.fullVersion == data.fullVersion);
+
+        if (index > -1) {
+            products[index] = data;
+        } else {
+            products.push(data);
+        }
+
+        this.store.set(PRODUCT_STORE, products);
     }
 
     /**
@@ -56,7 +74,7 @@ class VersionManager {
      * @param expectedSizeBytes e.g. 1000000
      * @returns 
      */
-    getProductVersionState(options: ProductDetails, expectedSizeBytes: number): VersionStats {
+    getProductVersionState(options: ProductDetails): VersionStats {
         const finalPath = path.join(this.basePath, options.productName, options.fullVersion);
 
         //FIXME: check if downloaded and installed
@@ -66,14 +84,17 @@ class VersionManager {
 
         const loadedSize = this.getVersionLoadedSize(options.fullVersion);
 
-        if (expectedSizeBytes > 0) {
-            if (loadedSize == expectedSizeBytes) {
-                return { progress: 100, state: VersionState.Downloaded };
-            } else if (loadedSize > 0) {
-                return { progress: Math.round((loadedSize / expectedSizeBytes) * 100), state: VersionState.PartlyDownloaded };
+        const productData = this.getStoreProductData(options.productName, options.fullVersion);
+        
+        if(productData) {
+            if (productData.sizeBytes > 0) {
+                if (loadedSize == productData.sizeBytes) {
+                    return { progress: 100, state: VersionState.Downloaded };
+                } else if (loadedSize > 0) {
+                    return { progress: Math.round((loadedSize / productData.sizeBytes) * 100), state: VersionState.PartlyDownloaded };
+                }
             }
         }
-
         return { progress: 0, state: VersionState.NotInstalled };
     }
 
@@ -85,7 +106,6 @@ class VersionManager {
         return this.getVersionLoadedSize(this.currentHandlingVersion.fullVersion);
     }
     private getVersionLoadedSize(fullVersion: string): number {
-        // const tempFilePath = path.join(this.tempPath, fullVersion + '.temp');
         const tempFilePath = this.getVersionTempPath(fullVersion);
 
         if (fs.existsSync(tempFilePath)) {
@@ -102,7 +122,6 @@ class VersionManager {
     private changeStatus(status: VersionManagerState, force = false) {
         if (force || this.state != status) {
             this.state = status;
-            // this.onStatusChange({ productName: this.currentHandlingVersion.productName, fullVersion: this.currentHandlingVersion.fullVersion, }, status);
             this.emit(VersionManagerEvent.StatusChange, { productName: this.currentHandlingVersion.productName, fullVersion: this.currentHandlingVersion.fullVersion }, status);
         }
     }
@@ -110,17 +129,16 @@ class VersionManager {
     private async TEMP_GET_YA_LINK() {
         const response = await axios.get('https://cloud-api.yandex.net/v1/disk/resources/download?path=disk%3A%2FAgroTechSimDesktop051.zip', {
             headers: {
-                Authorization: 'OAuth y0__xCdjY0KGKqcNiDw6-fLEsfmTnKF0K5Ovb0pdp0sE2GMNXqw'
+                Authorization: import.meta.env.VITE_YANDEX_OAUTH_TOKEN ,
             },
         });
         return response.data.href;
     }
-    private handleProgress(event: AxiosProgressEvent): void {
+    private handleProgress(event: AxiosProgressEvent, sizeBytes: number): void {
         if (event.lengthComputable) {
-            const bytesLeft = event.total - event.loaded;
-            const rate = event.rate;
-            // this.onDownloadProgress({ bytesLeft, rate });
-            this.emit(VersionManagerEvent.DownloadProgress, { bytesLeft, rate });
+            const rate = Math.round((event.loaded / 1024 / 1024) * 100) / 100;
+            const progress = Math.round((event.loaded / sizeBytes) * 1000) / 10;
+            this.emit(VersionManagerEvent.DownloadProgress, { progress, rate });
         }
     }
     private isBusy(): boolean {
@@ -134,18 +152,20 @@ class VersionManager {
             this.currentHandlingVersion.controller.abort();
         }
     }
-    async startProductVersionDownload(options: ProductDetails): Promise<number> {
+    async startProductVersionDownload(options: ProductDetails): Promise<void> {
         try {
             if (this.isBusy()) return;
 
-            // this.currentHandlingVersion.fullVersion = options.fullVersion || this.currentHandlingVersion.fullVersion;
             this.switchHandlingVersion(options);
 
             //FIXME:
             this.currentHandlingVersion.url = await this.TEMP_GET_YA_LINK();
             this.currentHandlingVersion.controller = new AbortController();
 
-            const totalBytes = await this.getActualFileSize(this.currentHandlingVersion.url);
+            //save file size to store
+            const sizeBytes = await this.getActualFileSize(this.currentHandlingVersion.url);
+            this.setStoreProductData({ productName: options.productName, fullVersion: options.fullVersion, sizeBytes });
+
             const existingFileSize = this.getCurrentHandlingVersionLoadedSize();
 
             const headers: any = existingFileSize
@@ -155,7 +175,7 @@ class VersionManager {
             //FIXME:
             headers['Authorization'] = 'OAuth y0__xCdjY0KGKqcNiCh8-HLErRK123PKNuEKrNPKk5A3jvj_czs';
 
-            const throttledHandleProgress = throttle((evt: AxiosProgressEvent) => this.handleProgress(evt), 1000);
+            const throttledHandleProgress = throttle((evt: AxiosProgressEvent) => this.handleProgress(evt, sizeBytes), 1000);
 
             const config: AxiosRequestConfig = {
                 headers,
@@ -179,9 +199,9 @@ class VersionManager {
             //FIXME: delaying this for async state manager to catch return bytes size
             // need this to return bytes size before the even fire state manager update
             // probably should pass optional params in the event instead
-            setTimeout(() => { this.changeStatus(VersionManagerState.Downloading); }, 1000);
+            // setTimeout(() => { ; }, 1000);
+            this.changeStatus(VersionManagerState.Downloading);
 
-            return totalBytes;
         } catch (error) {
             if (this.state != VersionManagerState.Paused) {
                 this.throwError(error)

@@ -6,10 +6,7 @@ export const useManagerStore = defineStore('manager', {
     state: () => ({
         installedProducts: [] as ProductDetails[],
         managerState: {
-            downloadProgress: 0,
-            installationProgress: 0,
             state: VersionManagerState.Idle,
-            downloadRate: 0,
             currentHandlingVersion: ''
         },
     }),
@@ -18,19 +15,20 @@ export const useManagerStore = defineStore('manager', {
             this.installedProducts = await window.vmanager.getInstalledProducts();
         },
         async initializeStore() {
-            // const productStore = useProductStore();
+            const productStore = useProductStore();
 
-            window.vmanager.on(VersionManagerEvent.DownloadProgress, (progressDetails: { bytesLeft: number, rate: number }) => {
-                // this.managerState.downloadProgress = Math.round((1 - progressDetails.bytesLeft / productStore.totalSizeBytes) * 100);
-                // this.productMeta.rate = (progressDetails.rate / 1024 / 1024).toFixed(2);
-                console.log(progressDetails)
-            });
+            // window.vmanager.on(VersionManagerEvent.DownloadProgress, (progressDetails: { bytesLeft: number, rate: number }) => {
+            //     // this.managerState.downloadProgress = Math.round((1 - progressDetails.bytesLeft / productStore.totalSizeBytes) * 100);
+            //     // this.productMeta.rate = (progressDetails.rate / 1024 / 1024).toFixed(2);
+            //     console.log(progressDetails)
+            // });
             window.vmanager.on(VersionManagerEvent.StatusChange, (options: ProductDetails, status: VersionManagerState) => {
                 console.log(status, options);
                 // if (options.fullVersion && options.productName) {
                 //     this.refreshVersionState(options);
                 // }
-
+                this.updateManagerState();
+                productStore.updateVersionMetadata()
             })
             // window.vmanager.on(VersionManagerEvent.UnpackingProgress, (progress: number) => {
             //     this.fileManagerState.progress = progress;
@@ -38,6 +36,11 @@ export const useManagerStore = defineStore('manager', {
 
             // await this.refreshInstalledProducts()
         },
+        //STATES
+        async updateManagerState() {
+            this.managerState = await window.vmanager.getVersionManagerState();
+        }
+        //STATES
     },
     getters: {
         isManagerIdle(state) {
@@ -49,7 +52,7 @@ export const useManagerStore = defineStore('manager', {
         isDownloading(state) {
             return state.managerState.state == VersionManagerState.Downloading;
         },
-        isManagerHandlingFile(state) {
+        isHandlingFile(state) {
             return [VersionManagerState.Installing, VersionManagerState.Packing].includes(state.managerState.state);
         },
         isHandlingVersionMatchesActive(state) {

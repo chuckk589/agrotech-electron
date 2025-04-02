@@ -1,9 +1,9 @@
 // stores/apiStore.ts
-import { ProductDetails, RetrieveSimulatorWithLicenseDto, VersionState } from '@/types';
+import { ProductDetails, RetrieveSimulatorWithLicenseDto, VersionManagerEvent, VersionState, VersionStats } from '@/types';
 import { defineStore } from 'pinia';
 import { RetrieveSimulatorDto, RetrieveVersionDto } from '../../../agrotech-back/shared';
 import { STORE_API } from '../db/constants';
-import { useCacheStore } from './cache';
+import { useCacheStore } from './cacheStore';
 import { useManagerStore } from './managerStore';
 
 //@ts-ignore
@@ -265,12 +265,14 @@ export const useProductStore = defineStore('product', {
         versions: [] as RetrieveVersionDto[],
         activeVersion: {} as RetrieveVersionDto,
         latestVersion: {} as RetrieveVersionDto,
-        versionMeta: { state: VersionState.NotInstalled, totalSizeBytes: 0 },
+        versionMeta: { state: VersionState.NotInstalled, progress: 0, downloadRate: 0 },
     }),
     getters: {
-   
         isInstalled(state) {
             return state.versionMeta.state == VersionState.Installed;
+        },
+        isPartlyDownloaded(state) {
+            return state.versionMeta.state == VersionState.PartlyDownloaded;
         },
         isLastVersionInstalled(state) {
             const managerStore = useManagerStore();
@@ -297,6 +299,27 @@ export const useProductStore = defineStore('product', {
         }
     },
     actions: {
+        async initializeStore() {
+            // const productStore = useProductStore();
+
+            window.vmanager.on(VersionManagerEvent.DownloadProgress, (progressDetails: { progress: number, rate: number }) => {
+                this.versionMeta.progress = progressDetails.progress;
+                this.versionMeta.downloadRate = progressDetails.rate
+                console.log(progressDetails)
+            });
+            // window.vmanager.on(VersionManagerEvent.StatusChange, (options: ProductDetails, status: VersionManagerState) => {
+            //     console.log(status, options);
+            //     // if (options.fullVersion && options.productName) {
+            //     //     this.refreshVersionState(options);
+            //     // }
+
+            // })
+            // window.vmanager.on(VersionManagerEvent.UnpackingProgress, (progress: number) => {
+            //     this.fileManagerState.progress = progress;
+            // })
+
+            // await this.refreshInstalledProducts()
+        },
         setActiveVersion(version_id: number) {
             const version = this.versions.find(v => v.id == version_id);
             if (version) {
@@ -306,9 +329,10 @@ export const useProductStore = defineStore('product', {
         async setActiveProduct(product_id: number) {
             this.activeProduct = this.products.find((product: RetrieveSimulatorWithLicenseDto) => product.id == product_id) || null;
             if (this.activeProduct) {
+                const managerStore = useManagerStore();
+
                 this.versions = this.activeProduct.versions;
                 //try to find installed among the versions
-                const managerStore = useManagerStore();
                 const installedProduct = managerStore.installedProducts.find((product) => product.productName == this.activeProduct.label);
                 if (installedProduct) {
                     this.activeVersion = this.versions.find(v => v.fullName == installedProduct.fullVersion);
@@ -317,7 +341,17 @@ export const useProductStore = defineStore('product', {
                 }
                 this.latestVersion = this.versions[0];
             }
+
+           await this.updateVersionMetadata()
+
         },
+        //STATES
+        async updateVersionMetadata() {
+            const metaData: VersionStats = await window.vmanager.getVersionState({ productName: this.activeProduct.label, fullVersion: this.activeVersion.fullName })
+            this.versionMeta.progress = metaData.progress;
+            this.versionMeta.state = metaData.state;
+        },
+        //STATES
         async startExport(selectedPath: string) {
             this.loading = true;
             await window.vmanager.exportProduct({ productName: this.activeProduct.label, fullVersion: this.activeVersion.fullName }, selectedPath);
@@ -338,7 +372,7 @@ export const useProductStore = defineStore('product', {
         async startDownload() {
             this.loading = true;
 
-            const response = await window.vmanager.startDownload({ productName: this.activeProduct.label, fullVersion: this.activeVersion.fullName });
+            await window.vmanager.startDownload({ productName: this.activeProduct.label, fullVersion: this.activeVersion.fullName });
             // await this.updateVersionMetadata(fullVersion, response);
             this.loading = false;
         },

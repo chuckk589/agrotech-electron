@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 interface ImportMetaEnv {
-  readonly VITE_API_URL: string
+  readonly RENDERER_VITE_API_URL: string
   // more env variables...
 }
 
@@ -11,13 +11,10 @@ interface ImportMeta {
 interface Window {
   vmanager: {
     onError: (callback: (error: any) => void) => void;
-    // onStatusChange: (callback: (options: ProductDetails, status: VersionManagerState) => void) => void;
-    // onDownloadProgress: (callback: (progressDetails: { bytesLeft: number, rate: number }) => void) => void;
-    // on: (event: VersionManagerEvent, callback: (...args: Parameters<VersionManagerEventHandler[T]>) => void) => void;
     on<T extends VersionManagerEvent>(event: T, callback: (...args: Parameters<VersionManagerEventHandler[T]>) => void): void;
-    getVersionState: (options: ProductDetails, expectedSizeBytes: number) => Promise<VersionStats>;
+    getVersionState: (options: ProductDetails) => Promise<VersionStats>;
     getVersionManagerState: () => Promise<VersionManagerStats>;
-    startDownload: (options: ProductDetails) => Promise<number>;
+    startDownload: (options: ProductDetails) => Promise<void>;
     startInstall: (options: ProductDetails) => Promise<void>;
     startUninstall: (options: ProductDetails) => Promise<void>;
     cancelDownload: (options: ProductDetails) => Promise<void>;

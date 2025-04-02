@@ -2,11 +2,9 @@
   <div>
     <div class="at-app-bar">
       <v-btn variant="tonal" @click="$router.go(-1)">back</v-btn>
-      <div v-if="productStore.hasActiveLicense">
-        <v-btn :disabled="!managerStore.isManagerIdle" variant="tonal" @click="selectImported">import</v-btn>
-        <v-btn :disabled="!(productStore.isInstalled && managerStore.isManagerIdle)" variant="tonal"
+        <v-btn :disabled="disableImport" variant="tonal" @click="selectImported">import</v-btn>
+        <v-btn :disabled="disableExport" variant="tonal"
           @click="selectDirectory">export</v-btn>
-      </div>
       <v-menu location="bottom">
         <template v-slot:activator="{ props }">
           <v-btn v-bind="props" variant="tonal">
@@ -21,7 +19,7 @@
         </v-list>
       </v-menu>
     </div>
-    <div class="at-product-update" v-if="productStore.hasActiveLicense && !productStore.isLastVersionInstalled">
+    <div class="at-product-update" v-if="showNewVersion">
       <v-row>
         Доступна новая версия продукта {{ productStore.latestVersion.versionStr }}
         <v-btn @click="installLatest">Обновить продукт</v-btn>
@@ -113,7 +111,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import ManualCard from '../components/ManualCard.vue';
 import NewsCard from '../components/NewsCard.vue';
@@ -126,57 +124,10 @@ const API_URL = import.meta.env.VITE_API_URL;
 const route = useRoute();
 const productStore = useProductStore();
 const managerStore = useManagerStore();
-// const productStore = useproductStore();
-
-//@ts-ignore
-// const product: Ref<RetrieveSimulatorDto & { license: ProductLicense }> = ref({
-//   id: 0,
-//   label: 'string',
-//   firstName: 'string',
-//   secondName: 'string',
-//   description: 'string',
-//   productKey: 1,
-//   productNumber: 1,
-//   icon: 'string',
-//   mainImage: 'string',
-//   isFree: true,
-//   eduSim: true,
-//   license: {
-//     isBroken: true,
-//   },
-//   versions: [{
-//     id: 0,
-//     versionStr: 'string',
-//     manuals: []
-//   }],
-//   images: [],
-// });
 
 const tab = ref(1);
 const tab_spec = ref(1);
 
-// const product_id = +route.query.product_id;
-// const currentVersionIdx = ref(0);
-
-// const versionList = ref<RetrieveVersionDto[]>([]);
-// const currentVersion = ref<RetrieveVersionDto>({} as any);
-
-// const latestVersion = ref<RetrieveVersionDto>({ versionStr: 'string' } as any);
-
-
-// const images = computed(() => product.value.images.map((image) => new URL(image, API_URL).href));
-
-// const isLastVersionInstalled = computed(() => {
-//   const installed = productStore.installedProducts.find((installedP) => installedP.productName == product.value.label);
-//   if (installed) {
-//     return installed.fullVersion == latestVersion.value?.fullName;
-//   }
-//   return true;
-// });
-
-// const isLicenseActive = computed(() => {
-//   return !product.value.license.isBroken;
-// });
 //temp values
 const sys_info = [
   "Размер  приложения: 3.5 ГБ.",
@@ -194,7 +145,17 @@ const news = [{
   title: "Вышла новая версия",
   description: "Описание новой версии"
 }]
-
+//computed
+const disableImport = computed(() => {
+  return !productStore.hasActiveLicense || !managerStore.isManagerIdle
+});
+const disableExport = computed(() => {
+  return !productStore.hasActiveLicense || !(productStore.isInstalled && managerStore.isManagerIdle)
+});
+const showNewVersion = computed(() => {
+  return productStore.hasActiveLicense && !productStore.isLastVersionInstalled
+});
+//computed
 onMounted(async () => {
   // const entry = apiStore.products.find(product => product.id == product_id);
 
@@ -217,6 +178,7 @@ onMounted(async () => {
   //   product.value = entry;
   //   await switchVersion(currentVersionId);
   // }
+  console.log(productStore.versionMeta, managerStore.managerState);
 });
 const installLatest = async () => {
   await switchVersion(productStore.latestVersion.id);

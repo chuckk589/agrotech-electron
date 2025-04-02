@@ -5,13 +5,6 @@ import { getItem, setItem } from '../db';
 
 const LAST_UPDATED_KEY = 'lastUpdated';
 
-interface ApiState<T> {
-  data: T | null;
-  loading: boolean;
-  error: string | null;
-  lastUpdated: string | null;
-}
-
 interface CacheOptions {
   cacheKey: string;
   cacheName: string;
@@ -22,7 +15,7 @@ interface FetchOptions extends CacheOptions {
   saveCache?: boolean;
   expirationTime?: number;
 }
-export const useCacheStore = defineStore('cacheStore', {
+export const useCacheStore = defineStore('cache', {
   actions: {
     async fetchData<T>(
       url: string,
@@ -60,20 +53,6 @@ export const useCacheStore = defineStore('cacheStore', {
         return null;
       }
     },
-
-    // async postData<T>(url: string, payload: any, options: CacheOptions = { cacheName: 'ApiData', cacheKey: 'default' }): Promise<T | null> {
-    //   this.loading = true;
-    //   this.error = null;
-
-    //   try {
-    //     const response: AxiosResponse<T> = await axios.post(url, payload);
-    //     this.data = response.data;
-    //     await this.cacheData(response.data, options);
-    //     return response.data;
-    //   } catch (err) {
-    //     throw err;
-    //   }
-    // },
 
     async cacheData<T>(data: T, options: CacheOptions): Promise<void> {
       await setItem(options.cacheName, options.cacheKey, data);

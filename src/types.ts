@@ -40,13 +40,13 @@ export type ProductDetails = {
 
 export enum VersionManagerEvent {
     StatusChange = 'status-change',
-    DownloadProgress = 'on-download-progress',
-    UnpackingProgress = 'on-unpacking-progress',
+    DownloadProgress = 'download-progress',
+    UnpackingProgress = 'unpacking-progress',
 }
 
 export type VersionManagerEventHandler = {
     [VersionManagerEvent.StatusChange]: (options: ProductDetails, status: VersionManagerState) => void;
-    [VersionManagerEvent.DownloadProgress]: (progressDetails: { bytesLeft: number, rate: number }) => void;
+    [VersionManagerEvent.DownloadProgress]: (progressDetails: { progress: number, rate: number }) => void;
     [VersionManagerEvent.UnpackingProgress]: (progress: number) => void;
 };
 
@@ -61,4 +61,9 @@ export type ProductLicense = {
 
 export type RetrieveSimulatorWithLicenseDto = RetrieveSimulatorDto & {
     license: ProductLicense;
+}
+export type ProductMetaData = {
+    productName: string;
+    fullVersion: string;
+    sizeBytes: number;
 }

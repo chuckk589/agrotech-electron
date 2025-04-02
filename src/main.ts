@@ -65,7 +65,7 @@ app.on('activate', () => {
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
 
-let versionManager = new VersionManager();
+const versionManager = new VersionManager();
 
 versionManager.emit = ((eventName: VersionManagerEvent, ...args: Parameters<VersionManagerEventHandler[typeof eventName]>) => {
   if (mainWindow) {
@@ -74,8 +74,8 @@ versionManager.emit = ((eventName: VersionManagerEvent, ...args: Parameters<Vers
 });
 
 
-safeIpcHandle('get-version-state', async (_, { options, expectedSizeBytes }: { options: ProductDetails, expectedSizeBytes: number }) => {
-  return versionManager.getProductVersionState(options, expectedSizeBytes);
+safeIpcHandle('get-version-state', async (_, { options }: { options: ProductDetails }) => {
+  return versionManager.getProductVersionState(options);
 });
 
 safeIpcHandle('new-product-download', async (_, { options }: { options: ProductDetails }) => {

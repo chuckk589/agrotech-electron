@@ -44,7 +44,7 @@
 </template>
 
 <script setup lang="ts">
-import { useErrorStore } from '@/stores/error';
+import { useErrorStore } from '@/stores/errorStore';
 import { onMounted, ref } from 'vue';
 import logo from '../assets/logo.svg';
 

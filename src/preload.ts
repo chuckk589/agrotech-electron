@@ -2,7 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron';
 import { ProductDetails, VersionManagerEvent, VersionManagerEventHandler } from './types';
 
 contextBridge.exposeInMainWorld('vmanager', {
-    getVersionState: (options: ProductDetails, expectedSizeBytes: number) => ipcRenderer.invoke('get-version-state', { options, expectedSizeBytes }),
+    getVersionState: (options: ProductDetails) => ipcRenderer.invoke('get-version-state', { options }),
     getVersionManagerState: () => ipcRenderer.invoke('get-version-manager-state'),
     on: (event: VersionManagerEvent, callback: (...args: Parameters<VersionManagerEventHandler[typeof event]>) => void) => {
         ipcRenderer.on(event, (_, ...args) => callback(...args as any));
