@@ -1,8 +1,8 @@
 <template>
-  <v-app>
-    <v-navigation-drawer permanent class="at-drawer" width="224">
-      <v-img class="at-logo" inline :src="logo"></v-img>
-      <v-list class="at-menu-text">
+  <v-app :class="route.meta.bgClass">
+    <v-navigation-drawer permanent class="at-drawer text-medium" width="224">
+      <div v-html="logo" class="at-logo"></div>
+      <v-list>
         <v-list-item to="/main/products" value="1">
           <v-list-item-title>Продукты</v-list-item-title>
         </v-list-item>
@@ -23,55 +23,62 @@
           <v-list-item-title>Помощь</v-list-item-title>
         </v-list-item>
       </v-list>
-      <div class="at-online-block">
-        <div :class="'at-dot ' + (online ? 'at-online-dot' : 'at-offline-dot')"></div>
-        <div>{{ online ? "Онлайн" : "Оффлайн" }}</div>
+      <div class="at-online-block at-button">
+        <div class="at-dot" :class="{ 'at-online-dot': configStore.online, 'at-offline-dot': !configStore.online }"></div>
+        <div>{{ configStore.online == true ? "Онлайн" : "Офлайн" }}</div>
       </div>
 
     </v-navigation-drawer>
 
     <v-main>
-      <v-snackbar location="top" v-model="errorStore.active" :text="errorStore.error" color="error">
-        <template v-slot:actions>
-          <v-btn color="blue" variant="text" @click="errorStore.clearError"> Close </v-btn>
-        </template>
-      </v-snackbar>
       <v-container fluid>
         <router-view />
       </v-container>
     </v-main>
+    
   </v-app>
 </template>
 
 <script setup lang="ts">
-import { useErrorStore } from '@/stores/errorStore';
-import { onMounted, ref } from 'vue';
-import logo from '../assets/logo.svg';
+import { useConfigStore } from '@/stores/configStore';
+import { useRoute } from 'vue-router';
+import { logo } from '../assets/svg/logo';
 
-const online = ref(false)
-const errorStore = useErrorStore();
+const configStore = useConfigStore()
 
-const checkOnline = async () => {
-  try {
-    await fetch('https://www.ya.ru', { mode: 'no-cors', method: 'head' });
-    online.value = true;
-  } catch (error) {
-    online.value = false;
-  }
-};
-onMounted(async () => {
-  await checkOnline();
-  setInterval(async () => {
-    await checkOnline();
-  }, 10000);
-});
+const route = useRoute()
+
+
 
 </script>
 <style lang="scss">
+.at-overlay {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: $blur-background;
+  background: rgba(0, 0, 0, 0.46) !important;
+
+  .v-progress-circular__overlay {
+    color: rgb(var(--v-theme-primary-base));
+  }
+
+  .v-overlay__content {
+    display: flex !important;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  .v-overlay__scrim{
+    opacity: unset !important;
+    background: unset !important;
+  }
+}
+
 .at-drawer {
   background: rgba(0, 0, 0, 0.46) !important;
-  border-right: $border-1 solid $stroke-white-15 !important;
-  color: $text-white-0 !important;
+  backdrop-filter: $blur-background;
 
   .v-navigation-drawer__content {
     display: flex;
@@ -79,12 +86,23 @@ onMounted(async () => {
     align-items: center;
   }
 
+  .v-list-item__overlay {
+    background: unset !important;
+    opacity: unset !important;
+  }
+}
+</style>
+<style lang="scss" scoped>
+.at-drawer {
+  border-right: $at-border;
+
+
   .v-list {
     width: 100%
   }
 
   .v-list-item--active {
-    border-right: 3px solid $primary-green-base;
+    border-right: 3px solid rgb(var(--v-theme-primary-base));
     background: rgba(0, 0, 0, 0.13) !important;
 
     .v-list-item-title {
@@ -93,12 +111,7 @@ onMounted(async () => {
   }
 
   .v-list-item-title {
-    color: $text-soft-400 !important;
-  }
-
-  .v-list-item__overlay {
-    background: unset !important;
-    opacity: unset !important;
+    color: $text-soft-400 ;
   }
 
   .v-list-item {
@@ -113,15 +126,10 @@ onMounted(async () => {
 
   .at-online-block {
     margin-top: auto;
-    display: flex;
     padding: 10px 18px;
-    width: 128px;
     gap: 15px;
     height: 44px;
-    background: rgba(0, 0, 0, 0.15);
-    border: $border-1 solid $stroke-white-15;
     align-items: baseline;
-    border-radius: $radius-mega;
     margin-bottom: $spacing-5;
 
     .at-dot {

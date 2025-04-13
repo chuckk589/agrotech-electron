@@ -1,23 +1,24 @@
 <template>
-    <v-card variant="flat" class="at-product-card">
-        <v-img src="https://cdn.vuetifyjs.com/images/cards/sunshine.jpg" cover></v-img>
-        <div class="at-product-card-body">
-            <v-card-title>{{ product.label }}</v-card-title>
-            <v-card-text>
+    <div class="at-product-card">
+        <v-img :src="props.displayCard" cover></v-img>
+        <div class="at-product-card-body d-flex flex-column">
+            <div class="at-product-card__label">{{ props.label }}</div>
+            <div>
                 <div class="at-product-card-version">
-                    <div>Версия 1.12</div>
-                    <div>Доступно обновление</div>
+                    <div class="text-small text-soft-400">Версия {{ props.displayVersion }}</div>
+                    <!-- <div class="at-chip text-badge">Доступно обновление</div> -->
                 </div>
-                <div class="at-product-card-desc">
-                    <!-- {{ product.description }} -->
-                    "Агродрон: Умное сельское хозяйство" — это инновационное приложение, разработанное для современных фермеров и агрономов, которые хотят использовать передовые технологии для повышения эффективности своего хозяйства. С помощью этого приложения вы сможете управлять агродроном, анализировать состояние полей и принимать обоснованные решения для улучшения урожайности.
+                <div class="at-product-card-desc text-medium">
+                    {{ props.description }}
                 </div>
-            </v-card-text>
-            <v-card-actions>
-                <v-btn class="at-button" variant="tonal">Подробнее</v-btn>
-            </v-card-actions>
+            </div>
+            <div class="pc-actions">
+                <v-btn @click="switchProduct" class="at-button text-medium">Подробнее</v-btn>
+            </div>
+            <div class="at-license-info" v-if="props.licenseExp">Лицензия до {{ new
+                Date(props.licenseExp * 1000).toLocaleDateString() }}</div>
         </div>
-    </v-card>
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -30,51 +31,124 @@ const productStore = useProductStore();
 const props = defineProps<{
     product_id: number;
     label: string;
+    displayVersion: string;
+    displayCard: string;
     description: string;
+    licenseExp?: number;
 }>();
 
 const switchProduct = () => {
     productStore.setActiveProduct(props.product_id);
-    router.push({ name: 'product' });
+    router.push({ path: 'product' });
 };
 </script>
-<style lang="scss">
-.at-product-card:first-child {
-    flex-basis: 100%;
-    max-width: unset;
+<style lang="scss" scoped>
+@use '../styles/typography.scss';
+
+.at-products-container .at-product-card:first-child {
+    //override
+    margin-right: 0;
     height: 407px;
+    max-width: unset;
+
+    flex-basis: 100%;
     flex-direction: row-reverse;
 
+
+
     .at-product-card-body {
-        width: 50%
+        width: 50%;
+        padding: $card-padding-large;
+
+        .at-product-card__label {
+            @extend .text-heading;
+        }
     }
+
     .at-product-card-desc {
         display: block;
+        overflow: hidden;
+        max-height: 168px;
+    }
+
+    .at-product-card-version {
+        align-items: center;
+        margin: $spacing-4 0;
+        justify-content: flex-start;
+
+        .at-chip {
+            height: 24px;
+        }
+    }
+
+    .v-img {
+        height: unset;
+    }
+
+    .at-button {
+        width: 180px;
+        height: 44px !important;
     }
 }
 
 .at-product-card {
-    flex: 1;
-    max-width: 300px;
-    min-width: 300px;
-    height: 278px;
+    //override
+    max-width: 317px;
+    min-width: 317px;
+    height: 352px;
+    margin: 0 $spacing-5 $spacing-6 0;
+    overflow: hidden;
     display: flex !important;
     flex-direction: column;
-    background: rgba(0, 0, 0, 0.2) !important;
+    background: $bg-dark-20 !important;
+    border-radius: $radius-huge !important;
+    border: $at-border !important;
 
     .at-product-card-desc {
         display: none
     }
+
     .at-product-card-version {
-       display: flex;
+        display: flex;
+        justify-content: space-between;
+        height: 24px;
+        margin: $spacing-5 0;
+
+        div:nth-child(1) {
+            margin-right: $spacing-4
+        }
     }
+
+    .at-product-card-desc {
+        margin-bottom: $spacing-6
+    }
+
+    .at-product-card-body {
+        padding: $card-padding-big;
+
+        .at-product-card__label {
+            @extend .text-medium;
+        }
+
+        .pc-actions {
+            margin-top: auto !important;
+        }
+    }
+
+    .v-img {
+        height: 164px;
+    }
+
+    .at-button {
+        width: 100%;
+        height: 52px !important;
+    }
+
+    .at-license-info {
+        display: flex;
+        justify-content: center;
+        margin-top: $spacing-3;
+    }
+
 }
-
-// .at-product-card .v-card-title {
-//     margin-top: auto;
-// }
-
-// .at-product-card .v-card-text {
-//     flex: unset;
-// }
 </style>

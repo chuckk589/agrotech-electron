@@ -1,42 +1,42 @@
 <template>
-  <div>
-    <v-alert v-if="errorMessage" type="error" class="mb-4">{{ errorMessage }}</v-alert>
-    <v-card flat class="at-code-card">
-      <v-card-title class="mb-4">Активация кода</v-card-title>
-      <v-card-text class="d-flex align-center flex-column">
-        <v-row class="text-center mb-4">Найдите письмо от разработчика или сервиса, в котором указан ваш лицензионный
-          ключ.
-          Обычно он выглядит
-          как последовательность символов, например: XXXXX-XXXXX-XXXXX-XXXXX.
-        </v-row>
-        <v-row class="w-100 mb-4">
-          <v-form ref="form" class="w-100 ">
-            <v-text-field :disabled="loading" label="Введите свой код-ключ" variant="solo-filled"
-              :rules="[rules.required, rules.link]" class="at-code-input"></v-text-field>
-          </v-form>
-        </v-row>
-        <v-row>
-          <v-btn :loading="loading" variant="tonal" @click="activateCode">Активировать</v-btn>
-        </v-row>
-      </v-card-text>
-    </v-card>
-    <div class="at-code-history">
-      <div>История активаций</div>
-      <v-data-table class="at-code-table" :items="history"></v-data-table>
+  <div class="at-code-container">
+    <div class="at-code-card">
+      <div class="code-card__icon">
+        <img src="../assets/lock.png">
+      </div>
+      <div class="code_card__body">
+        <div class="text-heading">Активация кода</div>
+        <div class="code-card__text text-base text-soft-400">Найдите письмо от разработчика или сервиса, в котором
+          указан ваш лицензионный
+          ключ.Обычно он выглядит как последовательность символов, например: XXXXX-XXXXX-XXXXX-XXXXX.</div>
+      </div>
+      <div class="code-card__input">
+        <div class="text-base text-soft-400">Введите свой код-ключ</div>
+        <v-form ref="form">
+          <v-text-field v-model="code" :disabled="loading" placeholder="XXXXX-XXXXX-XXXXX-XXXXX"
+            class="at-text-input"></v-text-field>
+        </v-form>
+      </div>
+      <v-btn :loading="loading" class="at-button text-medium" @click="activateCode">Активировать</v-btn>
+    </div>
+    <div class="at-code-history ">
+      <div class="text-average">История активаций</div>
+      <v-data-table hide-default-header hide-default-footer class="at-code-table text-medium text-soft-300"
+        :items="history"></v-data-table>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { GuardantStatus } from '@/guardant.types';
+import { useErrorStore } from '@/stores/errorStore';
+import { EventScope } from '@/utils/errorHandler';
 import { ref } from 'vue';
 const form = ref(null);
 const loading = ref(false);
-const errorMessage = ref('');
+const code = ref('');
+const errorStore = useErrorStore();
 
-const rules = {
-  required: (v: string) => !!v || 'Поле обязательно к заполнению',
-  link: (v: string) => v.length == 3 || 'Код должен состоять из 3 символов'
-}
 const history = Array.from({ length: 20 }, (_, i) => ({
   id: i + 1,
   code: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
@@ -45,41 +45,137 @@ const history = Array.from({ length: 20 }, (_, i) => ({
   duration: "3 месяца"
 }));
 
+const checkCode = async (code: string) => {
+  return await window.guardant.method('checkSerialNumberFormat', code);
+}
+
 const activateCode = async () => {
   const { valid, errors } = await form.value.validate()
   if (valid) {
     loading.value = true;
-    setTimeout(() => {
-      loading.value = false;
-      errorMessage.value = "Код не найден";
-      setTimeout(() => {
-        errorMessage.value = "";
-      }, 10000);
-    }, 2000);
+    const codeRes = await checkCode(code.value);
+
+    if (codeRes.status !== GuardantStatus.OK) {
+      errorStore.setEvent(EventScope.Guardant, codeRes.status)
+    } else {
+      //clean form
+      const response = await window.guardant.method('activateLicense', code.value);
+      errorStore.setEvent(EventScope.Guardant, response.status)
+      code.value = '';
+    }
+    loading.value = false;
+
   }
 }
 </script>
 
-<style>
-.at-code-card {
-  display: flex !important;
-  flex-direction: column;
-  align-items: center;
-}
+<style lang="scss" scoped>
+.at-code-container {
 
-.at-code-input input {
-  text-align: center;
-}
+  .at-code-card,
+  .at-code-history {
+    margin: auto;
+    max-width: 880px;
+  }
 
-.at-code-input .v-field__field {
-  justify-content: center;
+  .at-code-history>div {
+    margin-bottom: $spacing-4;
+  }
+
+  .at-code-card {
+    margin: 80px auto;
+    padding: $card-padding-large;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    background: $bg-dark-20;
+    border: $at-border;
+    backdrop-filter: blur(89.35px);
+    border-radius: $radius-huge;
+
+    .at-button {
+      background-color: rgb(var(--v-theme-primary-base-dark)) !important;
+      height: 48px;
+      padding: 0 $button-padding-big;
+    }
+
+    .code_card__body {
+      text-align: center;
+      margin: $spacing-6 0;
+      max-width: 670px;
+
+      div:nth-child(1) {
+        margin-bottom: $spacing-4;
+      }
+    }
+
+    .code-card__input {
+      margin-bottom: $spacing-6;
+
+      div:nth-child(1) {
+        text-align: center;
+        margin-bottom: $spacing-4;
+      }
+
+      .at-text-input {
+        width: 430px;
+        height: 56px;
+
+        background: rgba(0, 0, 0, 0.5);
+        border: $at-border;
+        border-radius: $radius-large;
+      }
+    }
+  }
+
+  .code-card__icon {
+
+    width: 64px;
+    height: 64px;
+
+    background: rgb(var(--v-theme-primary-base-dark));
+    border-radius: $radius-mega;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    img {
+      width: $icon-24;
+      height: $icon-24;
+    }
+  }
+}
+</style>
+<style lang="scss">
+.code-card__input {
+
+
+  input {
+    text-align: center;
+  }
+
+
 }
 
 .at-code-history {
-  margin-top: 100px;
-}
+  .v-table {
 
-.at-code-table {
-  padding: 20px;
+    tr {
+      transition: all 0.1s ease-in-out;
+
+    }
+  }
+
+  .v-table td {
+    border-top: $at-border !important;
+    border-bottom: unset !important;
+  }
+
+  tr:hover {
+    background: rgba(0, 0, 0, 0.1);
+  }
+
 }
 </style>
