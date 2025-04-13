@@ -23,3 +23,7 @@ contextBridge.exposeInMainWorld('vmanager', {
 contextBridge.exposeInMainWorld('filesystem', {
     openDirectoryDialog: async (type: string) => await ipcRenderer.invoke('open-directory-dialog', type)
 });
+
+contextBridge.exposeInMainWorld('guardant', {
+    method: async <K extends keyof GuardantExposedMethods>(methodName: K, ...args: Parameters<GuardantExposedMethods[K]>) =>  await ipcRenderer.invoke('guardant', { options: { methodName, args } }),
+});
