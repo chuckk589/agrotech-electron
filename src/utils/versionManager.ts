@@ -8,6 +8,7 @@ import { throttle } from 'lodash';
 import path from 'path';
 import unzipper from 'unzipper';
 import { ProductDetails, ProductMetaData, VersionManagerEvent, VersionManagerEventHandler, VersionManagerState, VersionManagerStats, VersionState, VersionStats } from '../types';
+import { VersionManagerErrorCode } from './errorHandler';
 
 const PRODUCT_STORE = 'products';
 class VersionManager {
@@ -29,7 +30,6 @@ class VersionManager {
         url: string;
         controller: AbortController | null;
     }
-
     emit<T extends VersionManagerEvent>(event: T, ...args: Parameters<VersionManagerEventHandler[T]>) { }
 
     constructor() {
@@ -71,12 +71,10 @@ class VersionManager {
      * used to get info about the any product version
      * @param productName e.g. 'agrotechsim228'
      * @param fullVersion e.g. 'LINUX_agrotechsim228_v1.0.0'
-     * @param expectedSizeBytes e.g. 1000000
      * @returns 
      */
     getProductVersionState(options: ProductDetails): VersionStats {
         const finalPath = path.join(this.basePath, options.productName, options.fullVersion);
-
         //FIXME: check if downloaded and installed
         if (fs.existsSync(finalPath)) {
             return { progress: 100, state: VersionState.Installed };
@@ -85,8 +83,8 @@ class VersionManager {
         const loadedSize = this.getVersionLoadedSize(options.fullVersion);
 
         const productData = this.getStoreProductData(options.productName, options.fullVersion);
-        
-        if(productData) {
+
+        if (productData) {
             if (productData.sizeBytes > 0) {
                 if (loadedSize == productData.sizeBytes) {
                     return { progress: 100, state: VersionState.Downloaded };
@@ -115,8 +113,14 @@ class VersionManager {
         return 0;
     }
     private async getActualFileSize(url: string): Promise<number> {
-        const response = await axios.head(url);
-        return parseInt(response.headers['content-length'], 10);
+        // const response = await axios.head(url);
+        // return parseInt(response.headers['content-length'], 10);
+        const _url = new URL(url);
+        const size = _url.searchParams.get('fsize');
+        if (size) {
+            return parseInt(size, 10);
+        }
+        return 0;
     }
 
     private changeStatus(status: VersionManagerState, force = false) {
@@ -125,14 +129,14 @@ class VersionManager {
             this.emit(VersionManagerEvent.StatusChange, { productName: this.currentHandlingVersion.productName, fullVersion: this.currentHandlingVersion.fullVersion }, status);
         }
     }
-    //FIXME:
-    private async TEMP_GET_YA_LINK() {
-        const response = await axios.get('https://cloud-api.yandex.net/v1/disk/resources/download?path=disk%3A%2FAgroTechSimDesktop051.zip', {
-            headers: {
-                Authorization: import.meta.env.VITE_YANDEX_OAUTH_TOKEN ,
-            },
-        });
-        return response.data.href;
+    private async getDownloadLink(fullVersion: string) {
+        //@ts-ignore
+        const url = new URL('config/download-link', import.meta.env.VITE_API_URL)
+
+        url.searchParams.append('fullVersion', fullVersion);
+
+        const response = await axios.get(url.toString());
+        return response.data;
     }
     private handleProgress(event: AxiosProgressEvent, sizeBytes: number): void {
         if (event.lengthComputable) {
@@ -158,12 +162,12 @@ class VersionManager {
 
             this.switchHandlingVersion(options);
 
-            //FIXME:
-            this.currentHandlingVersion.url = await this.TEMP_GET_YA_LINK();
+            this.currentHandlingVersion.url = await this.getDownloadLink(options.fullVersion);
             this.currentHandlingVersion.controller = new AbortController();
-
+            
             //save file size to store
             const sizeBytes = await this.getActualFileSize(this.currentHandlingVersion.url);
+            
             this.setStoreProductData({ productName: options.productName, fullVersion: options.fullVersion, sizeBytes });
 
             const existingFileSize = this.getCurrentHandlingVersionLoadedSize();
@@ -171,9 +175,6 @@ class VersionManager {
             const headers: any = existingFileSize
                 ? { Range: `bytes=${existingFileSize}-` }
                 : {};
-
-            //FIXME:
-            headers['Authorization'] = 'OAuth y0__xCdjY0KGKqcNiCh8-HLErRK123PKNuEKrNPKk5A3jvj_czs';
 
             const throttledHandleProgress = throttle((evt: AxiosProgressEvent) => this.handleProgress(evt, sizeBytes), 1000);
 
@@ -196,15 +197,11 @@ class VersionManager {
                 this.changeStatus(VersionManagerState.Idle);
             });
 
-            //FIXME: delaying this for async state manager to catch return bytes size
-            // need this to return bytes size before the even fire state manager update
-            // probably should pass optional params in the event instead
-            // setTimeout(() => { ; }, 1000);
             this.changeStatus(VersionManagerState.Downloading);
 
         } catch (error) {
             if (this.state != VersionManagerState.Paused) {
-                this.throwError(error)
+                this.throwError(VersionManagerErrorCode.DownloadFailed)
             }
         }
     }
@@ -225,7 +222,7 @@ class VersionManager {
             this.changeStatus(VersionManagerState.Idle);
 
         } catch (error) {
-            this.throwError(error);
+            this.throwError(VersionManagerErrorCode.InstallFailed);
         }
     }
     //FIXME: same as startProductVersionInstall
@@ -248,7 +245,7 @@ class VersionManager {
             this.changeStatus(VersionManagerState.Idle);
 
         } catch (error) {
-            this.throwError(error);
+            this.throwError(VersionManagerErrorCode.ImportFailed);
         }
     }
     private async extractZip(directory: unzipper.CentralDirectory, destination: string, interval = 1000): Promise<void> {
@@ -317,10 +314,12 @@ class VersionManager {
                         this.changeStatus(VersionManagerState.Idle);
                         resolve();
                     });
+                } else {
+                    this.throwError(VersionManagerErrorCode.UninstallFailed);
                 }
             })
         } catch (error) {
-            this.throwError(error);
+            this.throwError(VersionManagerErrorCode.UninstallFailed);
         }
     }
     async startProductVersionExport(options: ProductDetails, fullPath: string): Promise<void> {
@@ -364,7 +363,7 @@ class VersionManager {
             });
 
         } catch (error) {
-            this.throwError(error);
+            this.throwError(VersionManagerErrorCode.ExportFailed);
         }
     }
 
@@ -434,7 +433,7 @@ class VersionManager {
                 });
             })
         } catch (error) {
-            this.throwError(error);
+            this.throwError(VersionManagerErrorCode.LaunchFailed);
         }
     }
     //FIXME:
@@ -509,9 +508,9 @@ class VersionManager {
     }
 
     // ERRORS 
-    private throwError(error: any) {
+    private throwError(error: VersionManagerErrorCode) {
         this.changeStatus(VersionManagerState.Errored);
-        throw new Error(error);
+        throw error;
     }
 }
 
