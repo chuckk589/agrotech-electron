@@ -1,37 +1,160 @@
 @use 'variables' as *;
 
-body {
-    color: $text-white-0 !important;
-}
-
 .v-application {
     background: url('../assets/product_back.jpg') center/cover no-repeat !important;
+    // position: relative;
+    height: 300vh !important;
 
-    position: relative;
+    &.dark-bg::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: $blur-background;
+    }
 
-    &::before {
+    .at-button {
+        text-transform: unset !important;
+        display: flex;
+        min-width: unset;
+        background: rgba(0, 0, 0, 0.15) !important;
+        border: $at-border;
+        border-radius: $radius-mega !important;
+
+        .v-btn__underlay {
+            background: unset;
+        }
+    }
+
+    .at-chip {
+        background-color: $neutral-600;
+        border-radius: $radius-huge;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        white-space: nowrap;
+        overflow: hidden;
+        padding: 0 $button-padding-medium
+    }
+
+    .at-button-nav {
+        height: 36px !important;
+        width: 36px !important;
+        border-radius: 50% !important;
+        padding: 0 !important;
+    }
+
+    .at-button-nav-prev::before,
+    .at-button-nav-next::before {
         content: '';
         position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(15.65px);
+        inset: 0;
+        margin: auto;
+        width: 24px;
+        height: 24px;
+        background-image: url('../assets/arrow.png');
     }
-}
 
-.at-button {
-    text-transform: unset !important;
-    display: flex !important;
-    padding: 10px 18px !important;
-    // width: 128px;
-    height: 44px !important;
-    background: rgba(0, 0, 0, 0.15) !important;
-    border: $border-1 solid $stroke-white-15 !important;
-    align-items: baseline !important;
-    border-radius: $radius-mega !important;
+    .at-button-nav-next::before {
+        transform: rotate(180deg);
+    }
 
-    // margin-bottom: $spacing-5;
+    .at-app-bar {
+        padding: 0px $card-padding-big;
+        height: 80px;
+        background: $bg-dark-base-solid;
+        // backdrop-filter: $blur-background;
+        border-bottom: $at-border;
+        display: flex;
+        align-items: center;
+        position: fixed;
+        width: 100%;
+        top: 0;
+        z-index: 1;
+        width: calc(100% - $at-drawer-width);
 
+        .at-button {
+            height: 48px;
+            padding: $button-padding-small $button-padding-max $button-padding-small $button-padding-xsmall;
+            gap: 8px;
+        }
+    }
+
+    .at-news-container {
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: 160px;
+        padding: $spacing-12 $spacing-6 !important;
+        gap: $spacing-6;
+    }
+
+    .at-tabs {
+
+        .v-tab {
+            padding: 0 $card-padding-max;
+            opacity: 0.5;
+        }
+
+        .v-tab.v-tab-item--selected {
+            opacity: 1;
+
+        }
+
+        .v-tab__slider {
+            height: 3px !important;
+            background: rgb(var(--v-theme-primary-base))
+        }
+    }
+
+    .at-action-button {
+        gap: 10px;
+        width: 305px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: $radius-mega;
+        background: rgba(0, 0, 0, 0.15) !important;
+        backdrop-filter: $blur-background;
+    }
+
+    .at-text-input {
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: $radius-large;
+
+        .v-field__overlay,
+        .v-field__outline {
+            display: none;
+        }
+
+        &.v-input--focused {
+            background: rgba(0, 0, 0, 0.5);
+            outline: 2px solid rgba(255, 255, 255, 0.5) !important;
+            border-radius: $radius-large;
+
+        }
+
+        input {
+            caret-color: $state-success
+        }
+
+        &.v-input--error {
+            background: rgba(0, 0, 0, 0.5);
+            outline: 1px solid $state-error !important;
+            border-radius: $radius-large;
+
+            .v-messages {
+                color: $state-error !important;
+            }
+        }
+    }
+
+    .v-card__loader {
+        color: rgb(var(--v-theme-primary-base));
+    }
+
+    .at-slider-selected {
+        border: 3px solid rgb(var(--v-theme-primary-base));
+    }
 }

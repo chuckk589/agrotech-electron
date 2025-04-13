@@ -1,0 +1,96 @@
+@use 'variables' as *;
+
+
+.text-badge {
+  font-size: $type-scale-12;
+  line-height: 16px;
+  text-align: center;
+}
+
+.text-small {
+  font-size: $type-scale-14;
+  line-height: 20px;
+  letter-spacing: -0.006em;
+}
+
+.text-medium,
+.text-medium .v-list-item-title,
+.text-medium td {
+  font-size: $type-scale-16;
+  line-height: 24px;
+  letter-spacing: -0.008em;
+}
+
+.text-base {
+  letter-spacing: -0.011em;
+  line-height: 24px;
+  font-size: $type-scale-18;
+}
+
+.text-average {
+  font-size: $type-scale-20;
+  line-height: 20px;
+  letter-spacing: -0.006em;
+}
+
+.text-large {
+  font-weight: 500;
+  font-size: $type-scale-24;
+  line-height: 28px;
+  letter-spacing: -0.02em;
+}
+
+.text-heading {
+  font-weight: 500;
+  font-size: 40px;
+  line-height: 48px;
+  letter-spacing: -0.01em;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-opacity-50 {
+  opacity: 0.5;
+}
+
+.text-dark {
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.text-muted {
+  color: #CDD0D5;
+}
+
+
+.text-sub-500 {
+  color: $text-sub-500;
+}
+
+.text-soft-400 {
+  color: $text-soft-400;
+}
+
+.text-soft-300,
+.text-soft-300 td {
+  color: $text-soft-300;
+}
+
+.text-disabled-300 {
+  color: $text-disabled-300;
+}
+
+.text-white-0 {
+  color: $text-white-0;
+}
+
+//state colors
+ .state-success       { background-color: $state-success!important; }
+ .state-warning       { background-color: $state-warning!important; }
+ .state-error         { background-color: $state-error!important; }
+ .state-information   { background-color: $state-information!important; }
+ .state-away          { background-color: $state-away!important; }
+ .state-feature       { background-color: $state-feature!important; }
+ .state-neutral       { background-color: $state-neutral!important; }
+ .state-verified      { background-color: $state-verified!important; }

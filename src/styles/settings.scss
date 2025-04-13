@@ -1,0 +1,32 @@
+.v-slide-group__prev,
+.v-slide-group__next {
+    display: none !important;
+}
+
+.v-btn__prepend,
+.v-btn__append {
+    margin-inline: 0 !important;
+}
+
+.v-container {
+    padding: 0 !important;
+}
+
+.v-tab-item--selected .v-tab__slider {
+    height: 0px !important;
+}
+
+.v-btn {
+    text-transform: unset !important;
+}
+
+.v-table {
+    background: unset !important;
+}
+
+
+:root {
+    font-family: $font-text !important;
+    font-weight: 400 !important;
+    font-feature-settings: 'cv09' on, 'ss11' on, 'calt' off, 'liga' off !important;
+}

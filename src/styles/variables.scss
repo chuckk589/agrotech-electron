@@ -40,6 +40,7 @@ $radius-mega: 100px;
 
 // Icons
 $icon-20: 20px;
+$icon-24: 24px;
 $icon-32: 32px;
 $icon-40: 40px;
 
@@ -47,10 +48,12 @@ $icon-40: 40px;
 $card-padding-large: 32px;
 $card-padding-big: 24px;
 $card-padding-max: 20px;
+
 $button-padding-big: 48px;
 $button-padding-max: 24px;
 $button-padding-medium: 16px;
 $button-padding-small: 12px;
+$button-padding-xsmall: 8px;
 
 // Typography
 // Size typography
@@ -80,52 +83,62 @@ $text-small-font-size: 12px;
 $text-small-line-height: 1.4;
 $button-font-size: 16px;
 $button-line-height: 1;
-$blur-background-medium: 30px;
+// $blur-background-medium: 30px; not used
+$blur-background: blur(15.65px);
 
 // Neutral Colors
 $neutral-800: #161922;
-$neutral-700: #20232D;
-$neutral-600: #31353F;
+$neutral-700: #20232d;
+$neutral-600: #31353f;
 $neutral-500: #525866;
-$neutral-400: #868C98;
-$neutral-300: #CDD0D5;
-$neutral-200: #E2E4E9;
-$neutral-100: #F6F8FA;
-$neutral-0: #FFFFFF;
+$neutral-400: #868c98;
+$neutral-300: #cdd0d5;
+$neutral-200: #e2e4e9;
+$neutral-100: #f6f8fa;
+$neutral-0: #ffffff;
 
 // Primary Colors
-$primary-green-dark: #2D9F75;
-$primary-green-base: #38C793;
-$primary-orange-base: #F17B2C;
-$primary-orange-dark: #CC6724;
+$primary-green-dark: #2d9f75;
+$primary-green-base: #38c793;
+$primary-orange-base: #f17b2c;
+$primary-orange-dark: #cc6724;
 
 // State Colors
-$state-success: $primary-green-base;
-$state-warning: $primary-orange-base;
-$state-error: #FF4D4F;
-$state-information: #1890FF;
-$state-away: #FAAD14;
-$state-feature: #722ED1;
-$state-neutral: $neutral-400;
-$state-verified: #13C2C2;
+$state-success: #38c793;
+$state-warning: #f17b2c;
+$state-error: #ff4d4f;
+$state-information: #1890ff;
+$state-away: #faad14;
+$state-feature: #722ed1;
+$state-neutral: #868c98;
+$state-verified: #13c2c2;
 
 // Text Colors
-$text-sub-500: $neutral-500;
-$text-soft-400: $neutral-400;
-$text-disabled-300: $neutral-300;
-$text-white-0: $neutral-0;
+$text-sub-500: #525866;
+$text-soft-400: #868c98;
+$text-soft-300: #DADADA;
+$text-disabled-300: #cdd0d5;
+$text-white-0: #ffffff;
+
 
 // Stroke Colors
 $stroke-white-15: rgba(255, 255, 255, 0.15);
 $stroke-white-30: rgba(255, 255, 255, 0.30);
 
 // Icon Colors
-$icon-soft-400: $neutral-400;
-$icon-green-base: $primary-green-base;
-$icon-white-0: $neutral-0;
+$icon-soft-400: #868c98;
+$icon-green-base: #38c793;
+$icon-white-0: #ffffff;
 
 // Background Colors
-$bg-soft-600: #25252A;
-$bg-green-base: $primary-green-base;
+$bg-soft-600: #25252a;
+$bg-green-base: #38c793;
 $bg-light-15: rgba(255, 255, 255, 0.15);
-$bg-soft-40: rgba(255, 255, 255, 0.40);
+$bg-soft-40: rgba(255, 255, 255, 0.4);
+$bg-dark-20: rgba(0, 0, 0, 0.2);
+$bg-dark-base: rgba(33, 32, 37, 0.87);
+$bg-dark-base-solid: #212025;
+
+// variables
+$at-border: #{$border-1} solid #{$stroke-white-15};
+$at-drawer-width: 224px;
