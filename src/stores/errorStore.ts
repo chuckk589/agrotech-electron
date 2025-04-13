@@ -1,27 +1,34 @@
 // stores/errorStore.ts
-import { defineStore } from 'pinia'
+import { defineStore } from 'pinia';
+import { AtEventHandler, EventScope } from '../utils/errorHandler';
+
 
 export const useErrorStore = defineStore('error', {
   state: () => ({
-    error: '',
+    alert: {
+      title: 'Insert your alert title here!',
+      message: 'asdsadddddddddsssssssssssssssssssssssssssssssssssssssssssssssssdddddddddd',
+      type: 'error',
+      icon: '$warning'
+    },
     active: false,
   }),
 
   actions: {
-    setError(error: string) {
-      this.error = error
-      this.active = true
+    setEvent(scope: EventScope, code: number) {
+      const handler = new AtEventHandler(scope, code);
+      const type = handler.getType();
+      this.alert.title = type === 'error' ? 'Ошибка' : 'Успех';
+      this.alert.message = handler.getMessage();
+      this.alert.type = type;
+      this.alert.icon = type === 'error' ? '$warning' : '$success';
+      this.active = true;
     },
-
-    clearError() {
-      this.error = null
-      this.active = false
-    },
-
     subscribeToErrors() {
       if (window.vmanager) {
         window.vmanager.onError((error) => {
-          this.setError(error.message || 'Неизвестная ошибка')
+          console.log(error)
+          this.setEvent(EventScope.VersionManager, error);
         })
       }
     },

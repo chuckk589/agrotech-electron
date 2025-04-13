@@ -1,5 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 
+import { STORE_VERSION } from '@/db/constants';
+import { ProductCachedMetadata } from '@/types';
 import { defineStore } from 'pinia';
 import { getItem, setItem } from '../db';
 
@@ -69,6 +71,17 @@ export const useCacheStore = defineStore('cache', {
       const lastUpdatedTime = new Date(lastUpdated as string).getTime();
       const currentTime = new Date().getTime();
       return (currentTime - lastUpdatedTime) > expirationTime;
+    },
+    async updateProductMetaData(label: string, lastLaunch: string): Promise<void> {
+      const products: ProductCachedMetadata[] = await getItem(STORE_VERSION, 'products') || [];
+      const product = products.find((p) => p.label === label);
+
+      if (product) {
+        product.lastLaunch = lastLaunch;
+      } else {
+        products.push({ label, lastLaunch });
+      }
+      await setItem(STORE_VERSION, 'products', products);
     }
   },
 });

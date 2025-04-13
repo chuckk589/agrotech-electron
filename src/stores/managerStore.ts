@@ -1,10 +1,11 @@
-import { ProductDetails, VersionManagerEvent, VersionManagerState } from '@/types';
 import { defineStore } from 'pinia';
+import { LicenseEntryMinified } from '../guardant.types';
+import { ProductDetails, VersionManagerEvent, VersionManagerState } from '../types';
 import { useProductStore } from './productStore';
-
 export const useManagerStore = defineStore('manager', {
     state: () => ({
         installedProducts: [] as ProductDetails[],
+        installedLicenses: [] as LicenseEntryMinified[],
         managerState: {
             state: VersionManagerState.Idle,
             currentHandlingVersion: ''
@@ -13,26 +14,16 @@ export const useManagerStore = defineStore('manager', {
     actions: {
         async refreshInstalledProducts() {
             this.installedProducts = await window.vmanager.getInstalledProducts();
+            this.installedLicenses = await window.guardant.method('getExistingLicenses');
         },
         async initializeStore() {
             const productStore = useProductStore();
 
-            // window.vmanager.on(VersionManagerEvent.DownloadProgress, (progressDetails: { bytesLeft: number, rate: number }) => {
-            //     // this.managerState.downloadProgress = Math.round((1 - progressDetails.bytesLeft / productStore.totalSizeBytes) * 100);
-            //     // this.productMeta.rate = (progressDetails.rate / 1024 / 1024).toFixed(2);
-            //     console.log(progressDetails)
-            // });
             window.vmanager.on(VersionManagerEvent.StatusChange, (options: ProductDetails, status: VersionManagerState) => {
-                console.log(status, options);
-                // if (options.fullVersion && options.productName) {
-                //     this.refreshVersionState(options);
-                // }
+                // console.log(status, options);
                 this.updateManagerState();
                 productStore.updateVersionMetadata()
             })
-            // window.vmanager.on(VersionManagerEvent.UnpackingProgress, (progress: number) => {
-            //     this.fileManagerState.progress = progress;
-            // })
 
             await this.refreshInstalledProducts()
         },
