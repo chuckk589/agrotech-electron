@@ -12,6 +12,9 @@ const config: ForgeConfig = {
     asar: true,
     name: 'AgroTechLauncher',
     ignore: [/\/\.(?!vite)/], //essential for vite to work
+    extraResource: [
+      'guardant/'
+    ]
   },
   rebuildConfig: {},
   makers: [new MakerSquirrel({}), new MakerZIP({}, ['darwin']), new MakerRpm({}), new MakerDeb({})],

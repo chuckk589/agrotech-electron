@@ -1,11 +1,6 @@
 import { RetrieveSimulatorDto } from "../../agrotech-back/shared";
+import { LicenseEntryMinified } from "./guardant.types";
 
-
-export type News = {
-    title: string;
-    date: string;
-    content: string;
-}
 
 export enum VersionState {
     Installed = 'installed',
@@ -49,18 +44,11 @@ export type VersionManagerEventHandler = {
     [VersionManagerEvent.DownloadProgress]: (progressDetails: { progress: number, rate: number }) => void;
     [VersionManagerEvent.UnpackingProgress]: (progress: number) => void;
 };
-
-export type ProductLicense = {
-    isBroken: boolean;
-    // validFromDate: number;
-    // validUpToDate: number;
-    // restOfLifeTime: number;
-    // maxConcurrentResource: number;
-    // currentRunCounterValue: number;
-}
-
-export type RetrieveSimulatorWithLicenseDto = RetrieveSimulatorDto & {
-    license: ProductLicense;
+export type ProductCachedMetadata =  { label: string, lastLaunch: string }
+export type RetrieveSimulatorPopulated = RetrieveSimulatorDto & {
+    license: LicenseEntryMinified;
+} & {
+    lastLaunch: string;
 }
 export type ProductMetaData = {
     productName: string;

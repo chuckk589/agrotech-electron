@@ -38,7 +38,8 @@
     "ts-node": "^10.0.0",
     "typescript": "~4.5.4",
     "vite": "^5.0.12",
-    "vite-plugin-vuetify": "^2.0.3"
+    "vite-plugin-vuetify": "^2.0.3",
+    "vueperslides": "^3.6.0"
   },
   "keywords": [],
   "author": {
@@ -52,6 +53,7 @@
     "axios": "^1.8.3",
     "electron-store": "^7.0.0",
     "idb": "^8.0.2",
+    "koffi": "^2.11.0",
     "lodash": "^4.17.21",
     "pinia": "^2.1.7",
     "unzipper": "^0.12.3",

@@ -8,7 +8,12 @@ interface ImportMeta {
   readonly env: ImportMetaEnv
 }
 
+
+
 interface Window {
+  guardant: {
+    method: <K extends keyof GuardantExposedMethods>(methodName: K, ...args: Parameters<GuardantExposedMethods[K]>) => Promise<ReturnType<GuardantExposedMethods[K]>>;
+  },
   vmanager: {
     onError: (callback: (error: any) => void) => void;
     on<T extends VersionManagerEvent>(event: T, callback: (...args: Parameters<VersionManagerEventHandler[T]>) => void): void;

@@ -13,7 +13,9 @@ export function getBuildConfig(env: ConfigEnv<'build'>): UserConfig {
   return {
     root,
     mode,
+
     build: {
+
       // Prevent multiple builds from interfering with each other.
       emptyOutDir: false,
       // 🚧 Multiple builds may conflict.
@@ -22,8 +24,8 @@ export function getBuildConfig(env: ConfigEnv<'build'>): UserConfig {
       minify: command === 'build',
       terserOptions: {
         compress: {
-          drop_console: true, 
-          drop_debugger: true, 
+          drop_console: true,
+          drop_debugger: true,
         },
       },
     },
