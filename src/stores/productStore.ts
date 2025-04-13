@@ -203,7 +203,7 @@ export const useProductStore = defineStore('product', {
             return data.map((item) => {
                 return {
                     ...item,
-                    lastLaunch: launchedProducts.find((p) => p.label == item.label)?.lastLaunch || 'Никогда',
+                    lastLaunch: launchedProducts?.find((p) => p.label == item.label)?.lastLaunch || 'Никогда',
                     mainImage: new URL(item.mainImage, API_URL).href,
                     license: managerStore.installedLicenses.find((license) => (license.productNumber == item.productNumber && license.featureNumber == item.featureNumber)) || { isBroken: true } as any,
                 }
