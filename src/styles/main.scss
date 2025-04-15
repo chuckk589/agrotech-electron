@@ -2,8 +2,6 @@
 
 .v-application {
     background: url('../assets/product_back.jpg') center/cover no-repeat !important;
-    // position: relative;
-    height: 300vh !important;
 
     &.dark-bg::before {
         content: '';

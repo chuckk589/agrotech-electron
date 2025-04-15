@@ -92,11 +92,15 @@ const switchProduct = () => {
 }
 
 .at-product-card {
+    &:not(:last-child) {
+        margin-right: $spacing-5;
+    }
+
     //override
     max-width: 317px;
     min-width: 317px;
     height: 352px;
-    margin: 0 $spacing-5 $spacing-6 0;
+    margin-bottom: $spacing-6 ;
     overflow: hidden;
     display: flex !important;
     flex-direction: column;

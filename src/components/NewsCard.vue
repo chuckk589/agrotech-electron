@@ -49,6 +49,7 @@ const isCardBusy = computed(() => {
     padding: $card-padding-max;
     display: flex;
     flex-direction: column;
+    max-width: 500px;
     min-width: 428px;
     height: 396px;
 
