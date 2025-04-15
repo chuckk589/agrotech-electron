@@ -82,6 +82,21 @@ export const useCacheStore = defineStore('cache', {
         products.push({ label, lastLaunch });
       }
       await setItem(STORE_VERSION, 'products', products);
-    }
+    },
+    async addLicenseHistoryEntry(id: number) {
+      const licenses: { timestamp: number, id: number, status: string, }[] = await getItem(STORE_VERSION, 'licenses') || [];
+
+      licenses.push({
+        timestamp: Date.now(),
+        id,
+        status: 'new',
+      });
+
+      await setItem(STORE_VERSION, 'licenses', licenses);
+    },
+    async getLicenseHistory() {
+      const licenses: { timestamp: number, id: number, status: string, }[] = await getItem(STORE_VERSION, 'licenses') || [];
+      return licenses.sort((a, b) => b.timestamp - a.timestamp);
+    },
   },
 });
