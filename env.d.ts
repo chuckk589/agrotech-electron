@@ -32,6 +32,9 @@ interface Window {
   },
   filesystem: {
     openDirectoryDialog: (type: 'openFile' | 'openDirectory' | 'multiSelections' | 'showHiddenFiles' | 'createDirectory' | 'promptToCreate' | 'noResolveAliases' | 'treatPackageAsDirectory' | 'dontAddToRecent') => Promise<string | null>;
+  },
+  shell: {
+    openUrl: (url: string) => Promise<void>;
   }
 }
 

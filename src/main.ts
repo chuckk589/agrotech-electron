@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, FileFilter, ipcMain } from 'electron';
+import { app, BrowserWindow, dialog, FileFilter, ipcMain, shell } from 'electron';
 import contextMenu from 'electron-context-menu';
 import squirrel from 'electron-squirrel-startup';
 import path, { join } from 'path';
@@ -161,7 +161,11 @@ safeIpcHandle('get-installed-versions', async (_) => {
 safeIpcHandle('launch-product', async (_, { options }: { options: ProductDetails }) => {
   return versionManager.launchProductVersion(options);
 });
+//shell
 
+safeIpcHandle('open-url', async (_, { url }: { url: string }) => {
+  return shell.openExternal(url);
+});
 //filesystem
 safeIpcHandle('open-directory-dialog', async (_, type: string) => {
   const filters: FileFilter[] = [];

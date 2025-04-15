@@ -27,3 +27,7 @@ contextBridge.exposeInMainWorld('filesystem', {
 contextBridge.exposeInMainWorld('guardant', {
     method: async <K extends keyof GuardantExposedMethods>(methodName: K, ...args: Parameters<GuardantExposedMethods[K]>) =>  await ipcRenderer.invoke('guardant', { options: { methodName, args } }),
 });
+
+contextBridge.exposeInMainWorld('shell', {
+    openUrl: async (url: string) => await ipcRenderer.invoke('open-url', { url }),
+});
