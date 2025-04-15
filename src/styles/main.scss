@@ -2,6 +2,7 @@
 
 .v-application {
     background: url('../assets/product_back.jpg') center/cover no-repeat !important;
+    height: 300vh;
 
     &.dark-bg::before {
         content: '';
@@ -152,7 +153,39 @@
         color: rgb(var(--v-theme-primary-base));
     }
 
-    .at-slider-selected {
-        border: 3px solid rgb(var(--v-theme-primary-base));
+
+
+
+    .vueperslides__fractions {
+        all: unset;
+
+        display: flex;
+        justify-content: center;
+
+        .at-slider-controls {
+            display: flex;
+            align-items: center;
+
+            .at-slider-pg {
+                white-space: nowrap;
+                margin: 0 $spacing-2;
+            }
+        }
+    }
+
+    .vueperslides__track {
+        z-index: unset;
+
+        .vueperslide {
+            border: $at-border;
+        }
+
+        .vueperslide--active {
+            border: 3px solid rgb(var(--v-theme-primary-base));
+        }
+    }
+
+    .vueperslides--fixed-height.vueperslides--bullets-outside {
+        margin-bottom: unset;
     }
 }

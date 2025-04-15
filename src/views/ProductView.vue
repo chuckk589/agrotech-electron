@@ -111,7 +111,7 @@
             </div>
             <div class="at-product-photo-container">
               <div class="text-average text-disabled-300">Фото продукта</div>
-              <ProductViewSlider :images="productStore.activeProductImages" />
+              <ProductViewSlider :height="'256px'" :images="productStore.activeProductImages" />
             </div>
           </v-tabs-window-item>
           <v-tabs-window-item :value="2">
@@ -347,16 +347,28 @@ const selectImported = async () => {
 
 
 
-    .at-header-slider {
-      margin-top: $spacing-8;
 
+    .vueperslides__parallax-wrapper {
+      max-width: unset !important;
+    }
+
+    .vueperslides__inner {
       display: flex;
-      flex-direction: column-reverse;
-      align-items: center;
+      flex-direction: row-reverse;
 
-      .v-slide-group {
-        margin-bottom: $spacing-6 !important;
+      .vueperslides__parallax-wrapper {
+        width: 100%;
       }
+    }
+
+    .vueperslides__track .vueperslide {
+      border-radius: $radius-large;
+    }
+
+    .vueperslides__fractions {
+      align-self: end;
+      margin-right: 20px;
+
     }
   }
 }
@@ -458,13 +470,6 @@ const selectImported = async () => {
   margin-top: 2px;
 }
 
-// .at-body-tab {
-//   .v-tab__slider {
-//     height: 3px !important;
-//     background: $primary-green-base !important;
-//   }
-// }
-
 .at-app-bar .v-btn__append {
   transform: rotate(90deg);
 }
@@ -478,18 +483,28 @@ const selectImported = async () => {
 }
 
 .at-product-photo-container {
-  .v-slide-group {
-    margin-bottom: $spacing-6 !important;
-    width: 100% !important;
+
+  // .v-slide-group {
+  //   margin-bottom: $spacing-6 !important;
+  //   width: 100% !important;
+  // }
+  .at-header-slider {
+    margin: $spacing-6 0 !important;
   }
 
-  .at-slider-controls {
-    margin: 0 !important;
+  .vueperslides__parallax-wrapper {
+    max-width: 100% !important;
   }
 
-  img {
-    width: 425px !important;
-    height: 256px !important;
+  .vueperslides__inner {
+    display: unset !important;
+  }
+
+  .vueperslides--fixed-height.vueperslides--bullets-outside {
+    margin-bottom: 4em;
+  }
+  .vueperslides__fractions {
+    margin: $spacing-5 !important;
   }
 }
 

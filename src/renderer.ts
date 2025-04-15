@@ -1,5 +1,6 @@
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';
+import 'vueperslides/dist/vueperslides.css';
 import App from './App.vue';
 import vuetify from './plugins/vuetify';
 import { router } from './router/index';

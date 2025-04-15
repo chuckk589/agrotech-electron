@@ -1,15 +1,17 @@
 <template>
     <div class="at-product-header">
+        <div class="at-product-header__image"></div>
         <div class="at-product-header-row">
             <div class="at-product-header-info">
                 <div class="at-product-header__label text-heading">{{ productStore.activeProduct.label }}</div>
                 <div class="phi-version text-small">
                     <div>Версия {{ productStore.activeVersion.versionStr }}</div>
-                    <v-btn icon="mdi-delete" variant="text" v-if="productStore.isInstalled" @click="productStore.startUninstall()"/>
+                    <v-btn icon="mdi-delete" variant="text" v-if="productStore.isInstalled"
+                        @click="productStore.startUninstall()" />
                 </div>
                 <ProductActionComponent />
             </div>
-            <ProductViewSlider :shame="true" :images="productStore.activeProductImages"></ProductViewSlider>
+            <ProductViewSlider :height="'128px'" :shame="true" :images="productStore.activeProductImages"></ProductViewSlider>
         </div>
     </div>
 </template>
@@ -25,12 +27,21 @@ const productStore = useProductStore();
 
 <style lang="scss" scoped>
 .at-product-header {
-    display: flex;
-    height: 630px;
-    align-items: flex-end;
+    // display: flex;
+    // height: 630px;
+    // align-items: flex-end;
+
+    position: relative;
+
+    .at-product-header__image {
+        height: 630px;
+    }
 }
 
 .at-product-header-row {
+    position: absolute;
+    z-index: 1;
+    bottom: 0;
     display: flex;
     padding: $card-padding-big;
     width: 100%;

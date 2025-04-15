@@ -37,7 +37,6 @@
 import { useNewsStore } from '@/stores/newsStore';
 import { ref } from 'vue';
 import { VueperSlide, VueperSlides } from 'vueperslides';
-import 'vueperslides/dist/vueperslides.css';
 import NewsCard from '../components/NewsCard.vue';
 
 const newsStore = useNewsStore()
@@ -46,7 +45,6 @@ const slider = ref(null);
 </script>
 
 <style scoped lang="scss">
-
 .at-news-footer {
   margin: 24px;
 }
@@ -65,10 +63,6 @@ const slider = ref(null);
     width: 428px;
   }
 }
-
-
-
-
 
 .at-news-container {
   margin-top: 24px;
@@ -153,13 +147,16 @@ article {
     .vueperslide {
       border-radius: $radius-huge;
       border: $at-border;
-      border-radius: 24px;
     }
   }
 
   .vueperslides__parallax-wrapper,
   .vueperslides__track {
     overflow: visible;
+  }
+
+  .vueperslide--active {
+    border: 0 !important;
   }
 
   .vueperslides__fractions {

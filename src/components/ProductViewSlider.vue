@@ -1,83 +1,80 @@
 <template>
     <div class="at-header-slider">
-        <div class="at-slider-controls">
-            <v-btn @click="nav(0)" class="at-button at-button-nav-prev"></v-btn>
-            <div class="at-slider-pg">{{ currentIdx + 1  }}/{{ images.length }}</div>
-            <v-btn @click="nav(1)" class="at-button at-button-nav-next"></v-btn>
-        </div>
-        <v-slide-group center-active ref="slider" v-model="currentIdx" selected-class="at-slider-selected">
-            <v-slide-group-item v-for="photo in images" :key="photo" v-slot="{ selectedClass }">
-                <img :src="photo" cover :class="selectedClass">
-            </v-slide-group-item>
-        </v-slide-group>
+        <vueper-slides class="no-shadow" ref="slider" :gap="2" :touchable="false" :fixed-height="height" :bullets="false"
+            fractions :arrows="false" :visible-slides="3" :breakpoints="{ 1600: { visibleSlides: 2 } }">
+            <vueper-slide v-for="(slide, i) in images" :key="i" :image="slide" />
+            <template #fraction="{ current, total }">
+                <div class="at-slider-controls text-disabled-300 text-medium">
+                    <v-btn @click="prev" class="at-button at-button-nav-prev"></v-btn>
+                    <div class="at-slider-pg">{{ current }}/{{ total }}</div>
+                    <v-btn @click="next" class="at-button at-button-nav-next"></v-btn>
+                </div>
+            </template>
+        </vueper-slides>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
+import { VueperSlide, VueperSlides } from 'vueperslides';
 
 
 const props = defineProps<{
     images: string[],
+    height: string,
     shame?: boolean
 }>();
 
-
+//at-product-header__image
 const slider = ref(null);
-const currentIdx = ref(0);
 
-const nav = (direction: 0 | 1) => {
-    if (direction === 0) {
-        if (slider.value.hasPrev) {
-            currentIdx.value--;
-        } else {
-            currentIdx.value = props.images.length - 1;
-        }
-        
-    } else {
-        if (slider.value.hasNext) {
-            currentIdx.value++;
-        } else {
-            currentIdx.value = 0;
-        }
-    }
+const changeBg = () => {
     if (props.shame) {
-        const root = document.querySelector('.v-application') as HTMLElement;
+        const root = document.querySelector('.at-product-header__image') as HTMLElement;
         root.style.setProperty(
             'background',
-            `url(${props.images[currentIdx.value]}) center / cover no-repeat`,
-            'important'
+            `url(${slider.value.currentSlide.image}) center / cover no-repeat`,
+            
         );
     }
-};
+}
+const next = () => {
+    slider.value.next()
+    changeBg()
+}
+const prev = () => {
+    slider.value.previous()
+    changeBg()
+}
+onMounted(() => {
+    changeBg()
+})
 </script>
-<style lang="scss" scoped>
+<style lang="scss" scoped></style>
+<style lang="scss">
 .at-header-slider {
-    display: flex;
-    align-items: flex-end;
+    flex: 1;
 
-    .at-slider-controls {
+    .vueperslides__parallax-wrapper {
+        max-width: 670px;
+    }
+
+    .vueperslides__inner {
         display: flex;
-        align-items: center;
-        margin-right: $spacing-4;
+        flex-direction: row-reverse;
 
-        .at-slider-pg {
-            white-space: nowrap;
-            margin: 0 $spacing-2;
+        .vueperslides__parallax-wrapper {
+            width: 100%;
         }
     }
 
-    .v-slide-group {
-        width: 656px;
+    .vueperslides__track .vueperslide {
+        border-radius: $radius-large;
+    }
 
-        //FIXME:
-        img {
-            width: 208px;
-            height: 128px;
-            border-radius: $radius-large;
-            margin-right: 16px;
-        }
-
+    .vueperslides__fractions {
+        align-self: end;
+        margin-right: 20px;
     }
 }
 </style>
