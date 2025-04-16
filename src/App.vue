@@ -34,11 +34,13 @@ import { logo_big } from './assets/svg/logo-big';
 import { useConfigStore } from './stores/configStore';
 import { useErrorStore } from './stores/errorStore';
 import { useManagerStore } from './stores/managerStore';
+import { useNewsStore } from './stores/newsStore';
 import { useProductStore } from './stores/productStore';
 
 const errorStore = useErrorStore();
 const productStore = useProductStore();
 const configStore = useConfigStore();
+const newsStore = useNewsStore();
 const managerStore = useManagerStore()
 const router = useRouter();
 
@@ -56,7 +58,7 @@ onMounted(async () => {
 
   managerStore.initializeStore()
 
-
+  newsStore.fetchNews()
 });
 </script>
 <style lang="scss">
