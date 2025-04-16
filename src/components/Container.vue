@@ -31,7 +31,7 @@
     </v-navigation-drawer>
 
     <v-main>
-      <v-container fluid>
+      <v-container fluid class="h-100">
         <router-view />
       </v-container>
     </v-main>

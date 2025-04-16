@@ -73,6 +73,7 @@ const isCardBusy = computed(() => {
         display: flex;
         flex-direction: column;
         align-items: flex-start;
+        height: 100%;
 
         div:last-child {
             margin-top: auto;

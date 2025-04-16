@@ -53,7 +53,7 @@ export const EVENT_DATA: EventMap = {
 
     },
     [EventScope.Guardant]: {
-        [GuardantStatus.OK]: { message: 'Успешно', type: 'success' },
+        [GuardantStatus.OK]: { message: 'Операция выполнена успешно', type: 'success' },
         [GuardantStatus.INVALID_HANDLE]: { message: 'Неверный дескриптор', type: 'error' },
         [GuardantStatus.FEATURE_NOT_FOUND]: { message: 'Функция не найдена', type: 'error' },
         [GuardantStatus.FEATURE_RESOURCE_EXHAUST]: { message: 'Ресурс функции исчерпан', type: 'error' },
