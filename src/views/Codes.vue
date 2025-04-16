@@ -21,29 +21,38 @@
     </div>
     <div class="at-code-history ">
       <div class="text-average">История активаций</div>
-      <v-data-table hide-default-header hide-default-footer class="at-code-table text-medium text-soft-300"
-        :items="history"></v-data-table>
+      <v-data-table :headers="headers" hide-default-header hide-default-footer
+        class="at-code-table text-medium text-soft-300" :items="history">
+        <template v-slot:item.id="{ item }">
+          <span>id{{ item.id }}</span>
+        </template>
+        <template v-slot:item.timestamp="{ item }">
+          <span>{{ new Date(item.timestamp).toLocaleString() }}</span>
+        </template>
+      </v-data-table>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { STORE_VERSION } from '@/db/constants';
 import { GuardantStatus } from '@/guardant.types';
+import { useCacheStore } from '@/stores/cacheStore';
 import { useErrorStore } from '@/stores/errorStore';
+import { useManagerStore } from '@/stores/managerStore';
+import { useProductStore } from '@/stores/productStore';
+import { ProductCachedMetadata } from '@/types';
 import { EventScope } from '@/utils/errorHandler';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 const form = ref(null);
 const loading = ref(false);
 const code = ref('');
+const history = ref([]);
 const errorStore = useErrorStore();
-
-const history = Array.from({ length: 20 }, (_, i) => ({
-  id: i + 1,
-  code: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
-  date: new Date().toLocaleDateString(),
-  type: "3 продукта",
-  duration: "3 месяца"
-}));
+const cacheStore = useCacheStore();
+const headers = [{ value: 'id' }, { value: 'name' }, { value: 'timestamp' }];
+const managerStore = useManagerStore()
+const productStore = useProductStore()
 
 const checkCode = async (code: string) => {
   return await window.guardant.method('checkSerialNumberFormat', code);
@@ -55,22 +64,50 @@ const activateCode = async () => {
     loading.value = true;
     const codeRes = await checkCode(code.value);
 
-    if (codeRes.status !== GuardantStatus.OK) {
+    if (codeRes.status != GuardantStatus.OK) {
       errorStore.setEvent(EventScope.Guardant, codeRes.status)
     } else {
-      //clean form
       const response = await window.guardant.method('activateLicense', code.value);
+
       errorStore.setEvent(EventScope.Guardant, response.status)
-      code.value = '';
+
+      if (response.status == GuardantStatus.OK) {
+
+        await managerStore.refreshInstalledProducts()
+
+        await cacheStore.updateProductMetaData({ licenseId: response.licenseId, activationDate: Date.now() })
+
+        await productStore.fetchProducts()
+
+        loadHistory()
+      }
+      code.value = ''
     }
     loading.value = false;
 
   }
 }
+
+const loadHistory = async () => {
+  const historyRaw = await cacheStore.getCachedData<ProductCachedMetadata[]>(STORE_VERSION, 'products');
+
+  history.value = historyRaw?.map((item) => {
+    const product = productStore.products.find((product) => product.license.licenseId === item.licenseId);
+    return {
+      id: item.licenseId,
+      timestamp: item.activationDate,
+      name: product?.label || 'Неизвестно',
+    }
+  });
+}
+onMounted(() => {
+  loadHistory()
+})
 </script>
 
 <style lang="scss" scoped>
 .at-code-container {
+  padding-top: 80px;
 
   .at-code-card,
   .at-code-history {
@@ -83,7 +120,7 @@ const activateCode = async () => {
   }
 
   .at-code-card {
-    margin: 80px auto;
+    margin: 0 auto 80px;
     padding: $card-padding-large;
     display: flex;
     flex-direction: column;
@@ -171,6 +208,7 @@ const activateCode = async () => {
   .v-table td {
     border-top: $at-border !important;
     border-bottom: unset !important;
+    text-align: center;
   }
 
   tr:hover {

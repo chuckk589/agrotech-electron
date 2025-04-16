@@ -8,7 +8,7 @@
       <v-tab class="text-average" :value="2">Обновления</v-tab>
       <v-tab class="text-average" :value="3">События</v-tab>
     </v-tabs>
-    <v-tabs-window v-model="tab">
+    <v-tabs-window v-model="tab" class="at-news-tab__container">
       <v-tabs-window-item :value="1">
         <v-container fluid class="at-news-container">
           <NewsCard v-for="entry in newsStore.news" :key="entry.id" :entry="entry" />
@@ -47,7 +47,12 @@ onMounted(async () => {
   top: 80px;
   z-index: 1;
   width: calc(100% - $at-drawer-width);
-  background: $bg-dark-base-solid
+  // background: $bg-dark-base-solid
+  background: rgba(0, 0, 0, 0.46) !important;
+  backdrop-filter: blur(15.65px);
+}
+.at-news-tab__container{
+  padding-top: 160px;
 }
 </style>
 
@@ -59,7 +64,5 @@ onMounted(async () => {
   }
 }
 
-.at-news-body {
-  height: 100%;
-}
+
 </style>

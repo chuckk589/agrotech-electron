@@ -74,8 +74,8 @@ const slider = ref(null);
 article {
   min-width: 880px;
   max-width: 70%;
-  margin: calc(48px + 80px) auto 0;
-
+  margin: 0 auto;
+  padding-top: calc(48px + 80px);
   .vueperslides {
     margin-bottom: 100px;
   }

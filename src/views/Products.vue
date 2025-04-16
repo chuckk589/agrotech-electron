@@ -30,7 +30,6 @@ onMounted(loadData);
 .at-products-container {
   display: flex;
   flex-wrap: wrap;
-  margin-top: 80px;
-  padding: $spacing-3 $spacing-6;
+  padding: 100px $spacing-6;
 }
 </style>

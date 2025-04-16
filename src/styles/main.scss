@@ -2,7 +2,6 @@
 
 .v-application {
     background: url('../assets/product_back.jpg') center/cover no-repeat !important;
-    height: 300vh;
 
     &.dark-bg::before {
         content: '';
@@ -24,6 +23,10 @@
 
         .v-btn__underlay {
             background: unset;
+        }
+
+        .v-progress-circular__overlay {
+            color: rgb(var(--v-theme-primary-base));
         }
     }
 
@@ -64,8 +67,9 @@
     .at-app-bar {
         padding: 0px $card-padding-big;
         height: 80px;
-        background: $bg-dark-base-solid;
-        // backdrop-filter: $blur-background;
+        // background: $bg-dark-base-solid;
+        background: rgba(0, 0, 0, 0.46);
+        backdrop-filter: blur(15.65px);
         border-bottom: $at-border;
         display: flex;
         align-items: center;
@@ -85,8 +89,7 @@
     .at-news-container {
         display: flex;
         flex-wrap: wrap;
-        margin-top: 160px;
-        padding: $spacing-12 $spacing-6 !important;
+        padding: $spacing-6 $spacing-12 !important;
         gap: $spacing-6;
     }
 

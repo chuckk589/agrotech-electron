@@ -22,7 +22,7 @@
             </div>
           </div>
           <div class="at-help__info-card__href text-medium">
-            <a href="#">Условия использованию</a>
+            <a href="#" @click="test">Условия использованию</a>
             <a href="#">Лицензионное соглашение</a>
           </div>
         </div>
@@ -105,7 +105,9 @@ const faqs = [
     answer: "Для использования приложения в оффлайн режиме необходимо скачать необходимые данные на устройство"
   }
 ]
-
+const test = () => {
+  window.shell.openUrl('https://github.com')
+}
 const clearFileInput = () => {
   fileInput.value.value = null;
   currentFile.value = null
@@ -142,8 +144,7 @@ const handleFileUpload = (event: any) => {
 
 <style lang="scss" scoped>
 .at-help-container {
-  margin-top: 80px;
-  padding: $spacing-3 $spacing-6;
+  padding: calc(80px + $spacing-3) $spacing-6 $spacing-3;
 
   .at-help-block-1 {
     display: flex;

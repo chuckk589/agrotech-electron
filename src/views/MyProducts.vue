@@ -32,8 +32,7 @@ onMounted(async () => {
 .at-my-products-container {
   display: flex;
   flex-wrap: wrap;
-  padding: $spacing-3 $spacing-6;
-  margin-top: 80px;
+  padding: calc($spacing-3 + 80px) $spacing-6 $spacing-3;
 }
 
 .at-my-products-container .at-product-card {
