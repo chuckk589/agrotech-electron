@@ -18,14 +18,19 @@ contextMenu({
 const createWindow = () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1700,
+    height: 1080,
+    minHeight: 600,
+    minWidth: 1000,
+    resizable: true,
+    icon: path.join(__dirname, '../../src/assets/icons/app-icon.ico'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: true,
       webSecurity: false,
       // contextIsolation: false
     },
+    autoHideMenuBar: true,
     show: false,
   });
 
@@ -37,29 +42,11 @@ const createWindow = () => {
   } else {
     mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
   }
-  mainWindow.maximize()
   mainWindow.show()
-
-
-  // console.log('getApiVersion', guardant.core.getApiVersion());
-  // console.log('getLicenseInfo', JSON.stringify(guardant.core.getLicenseInfo("{\"dongleModel\":  0, \"remoteMode\": 3}")));
-  // console.log('verifyDigest', guardant.core.verifyDigest(new Uint8Array(40), new Uint8Array([1, 2, 3]), new Uint8Array(20)));
-  // console.log('checkSerialNumberFormat', guardant.core.checkSerialNumberFormat("uNfLMh-a8A6pn-vPJhHi-MCnDM3-mcJMqa"))
-  // console.log('ledBlink', guardant.core.ledBlink(12345678));
-  // console.log('getErrorMessage', guardant.core.getErrorMessage(GuardantStatus.INVALID_LICENSE));
-  // console.log(guardant.core.free(Buffer.alloc(64)));
-  // console.log('licenseActivate', guardant.core.licenseActivate("uNfLMh-a8A6pn-vPJhHi-MCnDM3-mcJMqa"));
-  // console.log('licenseRemove', guardant.core.licenseRemove(-1957431430));
-  // console.log('licenseCheckUpdateAvailable', guardant.core.licenseCheckUpdateAvailable(12345678, '{"dongleModel":1024}'));
-  // console.log('licenseCheckIsNotBanned', guardant.core.licenseCheckIsNotBanned(12345678, '{"dongleModel":1024}'));
-  // console.log('licenseCreateActivationRequest', guardant.core.licenseCreateActivationRequest());
-  // console.log('licenseSendActivationRequest', guardant.core.licenseSendActivationRequest("activation.guardant.com", "443", new Uint8Array([1, 2, 3]), '{"remoteMode":1}'));
-  // console.log('licenseCreateUpdateRequest', guardant.core.licenseCreateUpdateRequest(12345678));
-  // console.log('licenseSendUpdateRequest', guardant.core.licenseSendUpdateRequest(new Uint8Array([1, 2, 3]), '{"dongleModel":1024}'));
-  // console.log('licenseInstall', guardant.core.licenseInstall(new Uint8Array([1, 2, 3])));
-  // console.log('featureLogin', guardant.core.featureLogin(12345678, '{"featureNumber": 1}'));
-  // console.log('featureLogout', guardant.core.featureLogout(987654321));
-  // console.log('featureGetInfo', guardant.core.featureGetInfo(987654321));
+  // console.log('licenseRemove', guardant.core.licenseRemove(-279415544));
+  // console.log('licenseRemove', guardant.core.licenseRemove(-119470441));
+  // console.log('licenseRemove', guardant.core.licenseRemove(-188258865));
+  // console.log('licenseRemove', guardant.core.licenseRemove(-436783429));
 
   // console.log('featureCheck', guardant.core.featureCheck(987654321, 1));
 
@@ -185,7 +172,6 @@ safeIpcHandle('open-directory-dialog', async (_, type: string) => {
   }
   return null;
 });
-
 
 function safeIpcHandle(channel: string, listener: (event: Electron.IpcMainInvokeEvent, ...args: any[]) => Promise<any>) {
   ipcMain.handle(channel, async (event, ...args) => {
