@@ -45,11 +45,19 @@ export const useProductStore = defineStore('product', {
         },
         activeProductImages(state): string[] {
             if (state.activeProduct) {
-                return state.activeProduct.images.map((image) => new URL(image, API_URL).href);
+                return [
+                    new URL(state.activeProduct.mainImage, API_URL).href,
+                    ...state.activeProduct.images.map((image) => new URL(image, API_URL).href)
+                ];
             }
             return [];
         },
-
+        activeProductImagesRaw(state): string[] {
+            if (state.activeProduct) {
+                return state.activeProduct.images.map((image) => new URL(image, API_URL).href)
+            }
+            return [];
+        }
     },
     actions: {
         async initializeStore() {
@@ -142,7 +150,7 @@ export const useProductStore = defineStore('product', {
             this.loading = true;
             //save last launch
             const cacheStore = useCacheStore();
-            await cacheStore.updateProductMetaData(this.activeProduct.label, new Date().toLocaleString());
+            await cacheStore.updateProductMetaData({ licenseId: this.activeProduct.license?.licenseId, lastLaunch: Date.now() });
             await window.vmanager.launchProduct({ productName: this.activeProduct.label, fullVersion: this.activeVersion.fullName });
             this.loading = false;
         },
@@ -186,7 +194,6 @@ export const useProductStore = defineStore('product', {
                 if (data) {
                     const populated = await this.populateProducts(data);
                     this.products = populated;
-                    // await apiCache.cacheData(populated, { cacheName: STORE_API, cacheKey: 'products' });
                 }
             } finally {
                 setTimeout(() => {
@@ -198,14 +205,20 @@ export const useProductStore = defineStore('product', {
             const managerStore = useManagerStore();
             const cacheStore = useCacheStore();
 
-            const launchedProducts: ProductCachedMetadata[] = await cacheStore.getCachedData(STORE_VERSION, 'products');
+            const productsMetadata: ProductCachedMetadata[] = await cacheStore.getCachedData(STORE_VERSION, 'products');
 
             return data.map((item) => {
+                const installedLicense = managerStore.installedLicenses.find((license) => (license.productNumber == item.productNumber && license.featureNumber == item.featureNumber));
+                const metadata = productsMetadata?.find((p) => p.licenseId == installedLicense?.licenseId);
                 return {
                     ...item,
-                    lastLaunch: launchedProducts?.find((p) => p.label == item.label)?.lastLaunch || 'Никогда',
                     mainImage: new URL(item.mainImage, API_URL).href,
-                    license: managerStore.installedLicenses.find((license) => (license.productNumber == item.productNumber && license.featureNumber == item.featureNumber)) || { isBroken: true } as any,
+                    license: installedLicense ? {
+                        ...installedLicense,
+                        lastLaunch: metadata?.lastLaunch,
+                        activationDate: metadata?.activationDate,
+                    } :
+                        { isBroken: true } as any,
                 }
             })
         },

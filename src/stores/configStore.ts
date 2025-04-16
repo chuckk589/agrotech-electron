@@ -6,6 +6,7 @@ import { useTheme } from 'vuetify';
 const API_URL = import.meta.env.VITE_API_URL;
 
 export const useConfigStore = defineStore('config', () => {
+
   const theme = useTheme();
   const online = ref(false);
 
@@ -27,6 +28,14 @@ export const useConfigStore = defineStore('config', () => {
     }
   };
 
+  const getDownloadLink = async (manual_id: number) => {
+    const url = new URL('config/manual-link', API_URL)
+
+      url.searchParams.append('manual_id', manual_id.toString());
+
+      const response = await axios.get(url.toString());
+      return response.data;
+  }
   const checkOnlineInterval = setInterval(async () => {
     await checkOnline();
   }, 30 * 1000);
@@ -43,6 +52,7 @@ export const useConfigStore = defineStore('config', () => {
   return {
     loadCurrentTheme,
     setTheme,
+    getDownloadLink,
     online,
   };
 });

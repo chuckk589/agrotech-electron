@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="h-100">
     <div class="at-app-bar" :class="{ scrolled: appBarThreshold }">
       <v-btn @click="$router.go(-1)" class="at-button">
         <template v-slot:prepend>
@@ -111,7 +111,7 @@
             </div>
             <div class="at-product-photo-container">
               <div class="text-average text-disabled-300">Фото продукта</div>
-              <ProductViewSlider :height="'256px'" :images="productStore.activeProductImages" />
+              <ProductViewSlider :height="'256px'" :images="productStore.activeProductImagesRaw" />
             </div>
           </v-tabs-window-item>
           <v-tabs-window-item :value="2">
@@ -121,7 +121,7 @@
           </v-tabs-window-item>
           <v-tabs-window-item :value="3">
             <div class="at-manual-block">
-              <ManualCard v-for="manual in productStore.activeVersion.manuals" :key="manual.id" :manual="manual" />
+              <ManualCard v-for="manual in productStore.activeProduct.manuals" :key="manual.id" :manual="manual" />
             </div>
           </v-tabs-window-item>
         </v-tabs-window>
@@ -151,13 +151,37 @@ const showUpdateAlert = ref(true);
 const openedMenu = ref(false);
 //computed
 const sys_info = computed(() => {
-  return [
+  const outcome = [
     `Размер приложения: ${productStore.activeVersion.archiveSize} ГБ.`,
-    `Последний запуск: ${productStore.activeProduct.lastLaunch}.`,
-    `Дата окончания лицензии: ${new Date(productStore.activeProduct.license?.validUpToDate * 1000).toLocaleDateString()}`,
-    `Тип лицензии: индивидуальная`
+    `Последний запуск: ${productStore.activeProduct.license.lastLaunch || 'Никогда'}.`,
   ]
+  const isLicensed = !productStore.activeProduct.license.isBroken
+  if (isLicensed) {
+    const validFrom = productStore.activeProduct.license.validFromDate !== 0
+    const validUp = productStore.activeProduct.license.validUpToDate !== 0;
+    
+    productStore.activeProduct.license.activationDate && outcome.push(`Дата активации лицензии: ${new Date(productStore.activeProduct.license.activationDate).toLocaleDateString()}`); //already in ms
+    validUp && outcome.push(`Дата окончания лицензии: ${new Date(productStore.activeProduct.license.validUpToDate * 1000).toLocaleDateString()}`);
+    outcome.push(`Тип лицензии: ${validFrom && validUp? 'Без ограничений' : 'С ограничениями'}`);
+  }
+
+  return outcome;
+  // return [
+  //   `Размер приложения: ${productStore.activeVersion.archiveSize} ГБ.`,
+  //   `Последний запуск: ${productStore.activeProduct.license.lastLaunch || 'Никогда'}.`,
+  //   `Дата активации лицензии: ${new Date(productStore.activeProduct.license?.validFromDate * 1000).toLocaleDateString()}`,
+  //   `Дата окончания лицензии: ${new Date(productStore.activeProduct.license?.validUpToDate * 1000).toLocaleDateString()}`,
+  //   `Тип лицензии: ${isNotLimited ? 'Без ограничений' : 'С ограничениями'}`,
+  // ]
 });
+// по идее вот эти поля показывают у нас, лицензия с ограничениями или без. 
+// Если все нули, то ограничений нет. 
+// Если есть какие то данные (тут даты в unix timestamp вроде бы), 
+// то лицензия является ограниченной
+// Тут должно быть три поля:
+// 1. Тип лицензии - ограниченная или без ограничений.
+// 2. Дата активации лицензии
+// 3. Дата окончания лицензии, если она с ограничением
 const disableImport = computed(() => {
   return !productStore.hasActiveLicense || !managerStore.isManagerIdle
 });
@@ -237,6 +261,7 @@ const selectImported = async () => {
 
 .at-product-view-body {
   background: $bg-dark-base;
+  flex: 1;
 
   .at-news-container {
     margin-top: 0px;
@@ -466,6 +491,12 @@ const selectImported = async () => {
 <style lang="scss">
 @use '../styles/typography.scss' as *;
 
+.at-product-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .at-product-update .at-button .v-btn__content {
   margin-top: 2px;
 }
@@ -503,6 +534,7 @@ const selectImported = async () => {
   .vueperslides--fixed-height.vueperslides--bullets-outside {
     margin-bottom: 4em;
   }
+
   .vueperslides__fractions {
     margin: $spacing-5 !important;
   }

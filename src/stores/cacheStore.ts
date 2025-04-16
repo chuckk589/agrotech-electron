@@ -1,9 +1,9 @@
 import axios, { AxiosResponse } from 'axios';
 
-import { STORE_VERSION } from '@/db/constants';
-import { ProductCachedMetadata } from '@/types';
 import { defineStore } from 'pinia';
 import { getItem, setItem } from '../db';
+import { STORE_VERSION } from '../db/constants';
+import { ProductCachedMetadata } from '../types';
 
 const LAST_UPDATED_KEY = 'lastUpdated';
 
@@ -25,7 +25,7 @@ export const useCacheStore = defineStore('cache', {
     ): Promise<T | null> {
 
       if (options.loadCache) {
-        const cachedData = await this.getCachedData(options.cacheName, options.cacheKey);
+        const cachedData = await this.getCachedData<T>(options.cacheName, options.cacheKey);
         const cacheExpired = await this.isCacheExpired(options.cacheName, options.expirationTime);
         if (cachedData && !cacheExpired) {
           console.log('✅ Данные взяты из IndexedDB');
@@ -45,7 +45,7 @@ export const useCacheStore = defineStore('cache', {
         // const error = err as any;
         // this.error = error.response?.data?.message || 'Ошибка при запросе данных';
         console.log(err)
-        const cachedData = await this.getCachedData(options.cacheName, options.cacheKey);
+        const cachedData = await this.getCachedData<T>(options.cacheName, options.cacheKey);
         if (cachedData) {
           console.warn('⚠️ Нет интернета, используются кешированные данные');
           return cachedData;
@@ -72,31 +72,18 @@ export const useCacheStore = defineStore('cache', {
       const currentTime = new Date().getTime();
       return (currentTime - lastUpdatedTime) > expirationTime;
     },
-    async updateProductMetaData(label: string, lastLaunch: string): Promise<void> {
+    async updateProductMetaData(payload: Partial<ProductCachedMetadata>): Promise<void> {
       const products: ProductCachedMetadata[] = await getItem(STORE_VERSION, 'products') || [];
-      const product = products.find((p) => p.label === label);
+      const product = products.find((p) => p.licenseId === payload.licenseId);
 
       if (product) {
-        product.lastLaunch = lastLaunch;
+        product.lastLaunch = payload.lastLaunch ?? product.lastLaunch;
+        product.activationDate = payload.activationDate ?? product.activationDate;
       } else {
-        products.push({ label, lastLaunch });
+        products.push(payload as ProductCachedMetadata);
       }
       await setItem(STORE_VERSION, 'products', products);
     },
-    async addLicenseHistoryEntry(id: number) {
-      const licenses: { timestamp: number, id: number, status: string, }[] = await getItem(STORE_VERSION, 'licenses') || [];
-
-      licenses.push({
-        timestamp: Date.now(),
-        id,
-        status: 'new',
-      });
-
-      await setItem(STORE_VERSION, 'licenses', licenses);
-    },
-    async getLicenseHistory() {
-      const licenses: { timestamp: number, id: number, status: string, }[] = await getItem(STORE_VERSION, 'licenses') || [];
-      return licenses.sort((a, b) => b.timestamp - a.timestamp);
-    },
+    
   },
 });

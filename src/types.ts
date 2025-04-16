@@ -44,12 +44,11 @@ export type VersionManagerEventHandler = {
     [VersionManagerEvent.DownloadProgress]: (progressDetails: { progress: number, rate: number }) => void;
     [VersionManagerEvent.UnpackingProgress]: (progress: number) => void;
 };
-export type ProductCachedMetadata =  { label: string, lastLaunch: string }
+export type ProductCachedMetadata = { licenseId: number, lastLaunch?: number, activationDate?: number }
+// export type LicenseCachedMetadata = { licenseId: number, timestamp: number }
 export type RetrieveSimulatorPopulated = RetrieveSimulatorDto & {
-    license: LicenseEntryMinified;
-} & {
-    lastLaunch: string;
-}
+    license: LicenseEntryMinified & ProductCachedMetadata;
+} 
 export type ProductMetaData = {
     productName: string;
     fullVersion: string;

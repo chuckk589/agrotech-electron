@@ -15,12 +15,20 @@ export const useManagerStore = defineStore('manager', {
         async refreshInstalledProducts() {
             this.installedProducts = await window.vmanager.getInstalledProducts();
             this.installedLicenses = await window.guardant.method('getExistingLicenses');
+            console.log(this.installedLicenses)
+            // this.installedLicenses = [{
+            //     isBroken: false,
+            //     productNumber: 7,
+            //     featureNumber: 4,
+            //     currentRunCounterValue: 22,
+            //     validFromDate: 11111111,
+            //     validUpToDate: 1111111,
+            // }]
         },
         async initializeStore() {
             const productStore = useProductStore();
 
             window.vmanager.on(VersionManagerEvent.StatusChange, (options: ProductDetails, status: VersionManagerState) => {
-                // console.log(status, options);
                 this.updateManagerState();
                 productStore.updateVersionMetadata()
             })

@@ -15,8 +15,10 @@
             <div class="pc-actions">
                 <v-btn @click="switchProduct" class="at-button text-medium">Подробнее</v-btn>
             </div>
-            <div class="at-license-info" v-if="props.licenseExp">Лицензия до {{ new
+            <div class="at-license-info">
+                <div v-if="props.licenseExp">Лицензия до {{ new
                 Date(props.licenseExp * 1000).toLocaleDateString() }}</div>
+                </div>
         </div>
     </div>
 </template>
@@ -150,6 +152,7 @@ const switchProduct = () => {
 
     .at-license-info {
         display: flex;
+        height: 24px;
         justify-content: center;
         margin-top: $spacing-3;
     }

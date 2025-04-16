@@ -165,10 +165,12 @@ export interface LicenseEntry {
 export interface LicenseEntryMinified {
   isBroken: boolean;
   productNumber: number;
+  licenseId: number;
   featureNumber: number;
   currentRunCounterValue: number;
   validFromDate: number;
   validUpToDate: number;
+  restOfLifeTime: number;
 
 }
 export interface LicenseResponse {
