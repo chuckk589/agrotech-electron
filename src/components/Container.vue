@@ -3,23 +3,23 @@
     <v-navigation-drawer permanent class="at-drawer text-medium" width="224">
       <div v-html="logo" class="at-logo"></div>
       <v-list>
-        <v-list-item to="/main/products" value="1">
+        <v-list-item to="/main/products" >
           <v-list-item-title>Продукты</v-list-item-title>
         </v-list-item>
 
-        <v-list-item to="/main/my-products" value="2">
+        <v-list-item to="/main/my-products">
           <v-list-item-title>Мои продукты</v-list-item-title>
         </v-list-item>
 
-        <v-list-item to="/main/news" value="3">
+        <v-list-item to="/main/news" >
           <v-list-item-title>Новости</v-list-item-title>
         </v-list-item>
 
-        <v-list-item to="/main/codes" value="4">
+        <v-list-item to="/main/codes" >
           <v-list-item-title>Активация кода</v-list-item-title>
         </v-list-item>
 
-        <v-list-item to="/main/help" value="5">
+        <v-list-item to="/main/help">
           <v-list-item-title>Помощь</v-list-item-title>
         </v-list-item>
       </v-list>

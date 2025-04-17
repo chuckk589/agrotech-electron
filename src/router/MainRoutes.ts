@@ -4,7 +4,7 @@ const MainRoutes = {
   redirect: '/main/products',
   children: [
     {
-      path: '/main/products',
+      path: 'products',
       name: 'products',
       component: () => import('../views/Products.vue'),
       meta: {
@@ -12,12 +12,12 @@ const MainRoutes = {
       }
     },
     {
-      path: '/main/product',
+      path: 'product',
       name: 'product',
       component: () => import('../views/ProductView.vue'),
     },
     {
-      path: '/main/my-products',
+      path: 'my-products',
       name: 'my-products',
       component: () => import('../views/MyProducts.vue'),
       meta: {
@@ -25,7 +25,7 @@ const MainRoutes = {
       }
     },
     {
-      path: '/main/news',
+      path: 'news',
       name: 'news',
       component: () => import('../views/News.vue'),
       meta: {
@@ -33,7 +33,7 @@ const MainRoutes = {
       }
     },
     {
-      path: '/main/news-view/',
+      path: 'news-view',
       name: 'news-view',
       component: () => import('../views/NewsView.vue'),
       meta: {
@@ -41,7 +41,7 @@ const MainRoutes = {
       }
     },
     {
-      path: '/main/codes/',
+      path: 'codes',
       name: 'codes',
       component: () => import('../views/Codes.vue'),
       meta: {
@@ -49,7 +49,7 @@ const MainRoutes = {
       }
     },
     {
-      path: '/main/help/',
+      path: 'help',
       name: 'help',
       component: () => import('../views/Help.vue'),
       meta: {
