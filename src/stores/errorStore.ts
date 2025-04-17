@@ -23,6 +23,9 @@ export const useErrorStore = defineStore('error', {
       this.alert.type = type;
       this.alert.icon = type === 'error' ? '$warning' : '$success';
       this.active = true;
+      setTimeout(() => {
+        this.active = false;
+      }, 5000);
     },
     subscribeToErrors() {
       if (window.vmanager) {
