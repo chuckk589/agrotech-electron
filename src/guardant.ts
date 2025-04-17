@@ -1,4 +1,3 @@
-import fs from 'fs';
 import koffi from 'koffi';
 import path from 'path';
 import { ApiVersionInfo, Feature, GuardantStatus, LicenseEntry, LicenseEntryMinified, LicenseInfoResult, Product, VendorCodes } from './guardant.types';
@@ -26,7 +25,7 @@ export class Guardant implements GuardantExposedMethods {
 
     getExistingLicenses(): LicenseEntryMinified[] {
         const licenseInfo = this.grdlicCore.getLicenseInfo('{"dongleModel":  0, "remoteMode": 3}');
-        fs.writeFileSync('license.json', JSON.stringify(licenseInfo.licenseJson, null, 2), 'utf-8')
+        
         return licenseInfo.licenseJson?.licenses.reduce((acc: LicenseEntryMinified[], license: LicenseEntry) => {
             license.licenseInfo.products.forEach((product: Product) => {
                 product.features.forEach((feature: Feature) => {
