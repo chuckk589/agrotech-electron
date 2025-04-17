@@ -1,7 +1,31 @@
 @use 'variables' as *;
 
+.at-news-container {
+    display: flex;
+    flex-wrap: wrap;
+    padding: $spacing-6 $spacing-12 !important;
+    gap: $spacing-6;
+}
+
+::-webkit-scrollbar {
+    width: 18px;
+}
+
+
+::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.6);
+    border-radius: 2px;
+    border: $at-border;
+}
+
+::-webkit-scrollbar-track {
+    background: $bg-dark-base;
+}
+
 .v-application {
     background: url('../assets/product_back.jpg') center/cover no-repeat !important;
+
+
 
     &.dark-bg::before {
         content: '';
@@ -86,12 +110,7 @@
         }
     }
 
-    .at-news-container {
-        display: flex;
-        flex-wrap: wrap;
-        padding: $spacing-6 $spacing-12 !important;
-        gap: $spacing-6;
-    }
+
 
     .at-tabs {
 
