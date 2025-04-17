@@ -37,7 +37,7 @@ export class Guardant implements GuardantExposedMethods {
                         validFromDate: feature.validFromDate,
                         validUpToDate: feature.validUpToDate,
                         licenseId: license.licenseInfo.licenseId,
-                        restOfLifeTime: feature.restOfLifeTime,
+                        licenseType: feature.licenseType,
                     });
                 });
             })

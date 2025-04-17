@@ -73,16 +73,17 @@ export const useCacheStore = defineStore('cache', {
       return (currentTime - lastUpdatedTime) > expirationTime;
     },
     async updateProductMetaData(payload: Partial<ProductCachedMetadata>): Promise<void> {
-      const products: ProductCachedMetadata[] = await getItem(STORE_VERSION, 'products') || [];
-      const product = products.find((p) => p.licenseId === payload.licenseId);
+      const cachedMetadata: ProductCachedMetadata[] = await getItem(STORE_VERSION, 'products') || [];
+      const entry = cachedMetadata.find((p) => p.licenseId === payload.licenseId);
 
-      if (product) {
-        product.lastLaunch = payload.lastLaunch ?? product.lastLaunch;
-        product.activationDate = payload.activationDate ?? product.activationDate;
+      if (entry) {
+        entry.lastLaunch = payload.lastLaunch ?? entry.lastLaunch;
+        entry.activationDate = payload.activationDate ?? entry.activationDate;
+        entry.code = payload.code ?? entry.code;
       } else {
-        products.push(payload as ProductCachedMetadata);
+        cachedMetadata.push(payload as ProductCachedMetadata);
       }
-      await setItem(STORE_VERSION, 'products', products);
+      await setItem(STORE_VERSION, 'products', cachedMetadata);
     },
     
   },

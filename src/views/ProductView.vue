@@ -151,29 +151,31 @@ const showUpdateAlert = ref(true);
 const openedMenu = ref(false);
 //computed
 const sys_info = computed(() => {
-  const outcome = [
-    `Размер приложения: ${productStore.activeVersion.archiveSize} ГБ.`,
-    `Последний запуск: ${productStore.activeProduct.license.lastLaunch || 'Никогда'}.`,
-  ]
-  const isLicensed = !productStore.activeProduct.license.isBroken
-  if (isLicensed) {
-    const validFrom = productStore.activeProduct.license.validFromDate !== 0
-    const validUp = productStore.activeProduct.license.validUpToDate !== 0;
-    
-    productStore.activeProduct.license.activationDate && outcome.push(`Дата активации лицензии: ${new Date(productStore.activeProduct.license.activationDate).toLocaleDateString()}`); //already in ms
-    validUp && outcome.push(`Дата окончания лицензии: ${new Date(productStore.activeProduct.license.validUpToDate * 1000).toLocaleDateString()}`);
-    outcome.push(`Тип лицензии: ${validFrom && validUp? 'Без ограничений' : 'С ограничениями'}`);
+  const product = productStore.activeProduct;
+  const version = productStore.activeVersion;
+  const license = product.license;
+
+  const outcome: string[] = [
+    `Размер приложения: ${version.archiveSize} ГБ.`,
+    `Последний запуск: ${license.lastLaunch ? new Date(license.lastLaunch).toLocaleDateString() : 'Никогда'}.`,
+  ];
+
+  if (!license.isBroken) {
+    if (license.activationDate) {
+      outcome.push(`Дата активации лицензии: ${new Date(license.activationDate).toLocaleDateString()}`);
+    }
+
+    if (license.validUpToDate && license.validUpToDate !== 0) {
+      outcome.push(`Дата окончания лицензии: ${new Date(license.validUpToDate * 1000).toLocaleDateString()}`);
+    }
+
+    const typeText = license.licenseType === 1 ? 'Без ограничений' : 'С ограничениями';
+    outcome.push(`Тип лицензии: ${typeText}`);
   }
 
   return outcome;
-  // return [
-  //   `Размер приложения: ${productStore.activeVersion.archiveSize} ГБ.`,
-  //   `Последний запуск: ${productStore.activeProduct.license.lastLaunch || 'Никогда'}.`,
-  //   `Дата активации лицензии: ${new Date(productStore.activeProduct.license?.validFromDate * 1000).toLocaleDateString()}`,
-  //   `Дата окончания лицензии: ${new Date(productStore.activeProduct.license?.validUpToDate * 1000).toLocaleDateString()}`,
-  //   `Тип лицензии: ${isNotLimited ? 'Без ограничений' : 'С ограничениями'}`,
-  // ]
 });
+
 // по идее вот эти поля показывают у нас, лицензия с ограничениями или без. 
 // Если все нули, то ограничений нет. 
 // Если есть какие то данные (тут даты в unix timestamp вроде бы), 
