@@ -15,17 +15,21 @@ const config: ForgeConfig = {
     icon: path.resolve(__dirname, 'src/assets/icons/app-icon'),
     ignore: [/\/\.(?!vite)/], //essential for vite to work
     extraResource: [
-      'guardant/'
+      'guardant/',
+      path.resolve(__dirname, 'src/assets/icons/')
     ]
   },
+
   rebuildConfig: {},
   makers: [
-    new MakerSquirrel({
-      setupIcon: path.resolve(__dirname, 'src/assets/icons/app-icon.ico'),
-    }),
+    new MakerSquirrel({}),
     new MakerZIP({}, ['darwin']),
     new MakerRpm({}),
-    new MakerDeb({})
+    new MakerDeb({
+      options: {
+        icon: path.resolve(__dirname, 'icons', 'app-icon.png')
+      }
+    })
   ],
   plugins: [
     new VitePlugin({

@@ -14,7 +14,6 @@ contextMenu({
   showSaveImageAs: true
 });
 
-
 const createWindow = () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -24,15 +23,17 @@ const createWindow = () => {
     minWidth: 1000,
     resizable: true,
     icon: path.join(__dirname, '../../src/assets/icons/app-icon.ico'),
+    // icon: path.join(process.resourcesPath, 'icons', 'app-icon.ico'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: true,
       webSecurity: false,
       // contextIsolation: false
     },
-    autoHideMenuBar: true,
-    show: false,
+      autoHideMenuBar: true,
+      show: false,
   });
+
 
   // and load the index.html of the app.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
@@ -43,22 +44,7 @@ const createWindow = () => {
     mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
   }
   mainWindow.show()
-  // console.log('licenseRemove', guardant.core.licenseRemove(-279415544));
-  // console.log('licenseRemove', guardant.core.licenseRemove(-119470441));
-  // console.log('licenseRemove', guardant.core.licenseRemove(-188258865));
-  // console.log('licenseRemove', guardant.core.licenseRemove(-436783429));
 
-  // console.log('featureCheck', guardant.core.featureCheck(987654321, 1));
-
-  // const input = new Uint8Array([1, 2, 3, 4]);
-  // const output = new Uint8Array(4);
-  // console.log('featureEncrypt', guardant.core.featureEncrypt(987654321, 0, input, output));
-  // console.log('featureDecrypt', guardant.core.featureDecrypt(987654321, 0, input, output));
-  // console.log('featureSign', guardant.core.featureSign(987654321, 0, input, new Uint8Array(20)));
-
-  // console.log('featureGetTimeLimit', guardant.core.featureGetTimeLimit(987654321));
-  // console.log('featureGetRunCounter', guardant.core.featureGetRunCounter(987654321));
-  // console.log('featureGetMaxConcurrentResource', guardant.core.featureGetMaxConcurrentResource(987654321));
 };
 
 // This method will be called when Electron has finished

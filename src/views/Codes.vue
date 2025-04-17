@@ -70,6 +70,7 @@ const activateCode = async () => {
 
       if (response.status == GuardantStatus.OK) {
 
+        // await managerStore.refreshInstalledProducts()
         await cacheStore.updateProductMetaData({ licenseId: response.licenseId, code: code.value, activationDate: Date.now() })
 
         loadHistory()
@@ -89,86 +90,7 @@ onMounted(() => {
 })
 </script>
 
-<style lang="scss" scoped>
-.at-code-container {
-  padding-top: 80px;
 
-  .at-code-card,
-  .at-code-history {
-    margin: auto;
-    max-width: 880px;
-  }
-
-  .at-code-history>div {
-    margin-bottom: $spacing-4;
-  }
-
-  .at-code-card {
-    margin: 0 auto 80px;
-    padding: $card-padding-large;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-    background: $bg-dark-20;
-    border: $at-border;
-    backdrop-filter: blur(89.35px);
-    border-radius: $radius-huge;
-
-    .at-button {
-      background-color: rgb(var(--v-theme-primary-base-dark)) !important;
-      height: 48px;
-      padding: 0 $button-padding-big;
-    }
-
-    .code_card__body {
-      text-align: center;
-      margin: $spacing-6 0;
-      max-width: 670px;
-
-      div:nth-child(1) {
-        margin-bottom: $spacing-4;
-      }
-    }
-
-    .code-card__input {
-      margin-bottom: $spacing-6;
-
-      div:nth-child(1) {
-        text-align: center;
-        margin-bottom: $spacing-4;
-      }
-
-      .at-text-input {
-        width: 430px;
-        height: 56px;
-
-        background: rgba(0, 0, 0, 0.5);
-        border: $at-border;
-        border-radius: $radius-large;
-      }
-    }
-  }
-
-  .code-card__icon {
-
-    width: 64px;
-    height: 64px;
-
-    background: rgb(var(--v-theme-primary-base-dark));
-    border-radius: $radius-mega;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    img {
-      width: $icon-24;
-      height: $icon-24;
-    }
-  }
-}
-</style>
 <style lang="scss">
 .code-card__input {
 

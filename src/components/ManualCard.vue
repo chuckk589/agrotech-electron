@@ -3,55 +3,51 @@
         <img src="../assets/pdf-medium.png">
         <div class="mb-name text-base">{{ manual.manualName }}</div>
         <div class="mb-size text-disabled-300">{{ manual.size }}</div>
-        <v-btn class="at-button" @click="download" :loading="loading">Скачать
-            <template v-slot:append>
+        <v-btn class="at-button" @click="openUrl($event, manual.manualRef)" :loading="loading">Открыть
+            <!-- <template v-slot:append>
                 <img src="../assets/download.png">
-            </template>
+            </template> -->
         </v-btn>
     </div>
 </template>
 
 <script setup lang="ts">
-import { useConfigStore } from '@/stores/configStore';
-import axios from 'axios';
+import { useOpenUrl } from '@/mixins/openUrl';
 import { ref } from 'vue';
 import { RetrieveManualDto } from '../../../agrotech-back/shared';
-
-const configStore = useConfigStore()
 const loading = ref(false)
-
-const props = defineProps<{
+const { openUrl } = useOpenUrl()
+defineProps<{
     manual: RetrieveManualDto
 }>();
+// const download = async () => {
+//     loading.value = true
+//     try {
+//         const link = await configStore.getDownloadLink(props.manual.id)
+//         const url = new URL(link);
+//         const fileName = url.searchParams.get('filename') || 'manual.pdf';
 
-const download = async () => {
-    loading.value = true
-    try {
-        const link = await configStore.getDownloadLink(props.manual.id)
-        const url = new URL(link);
-        const fileName = url.searchParams.get('filename') || 'manual.pdf';
+//         const response = await axios.get(link, {
+//             responseType: 'blob',
+//         });
 
-        const response = await axios.get(link, {
-            responseType: 'blob',
-        });
+//         const blobUrl = URL.createObjectURL(response.data);
 
-        const blobUrl = URL.createObjectURL(response.data);
+//         const a = document.createElement('a');
+//         a.href = blobUrl;
+//         a.download = fileName;
+//         document.body.appendChild(a);
+//         a.click();
+//         document.body.removeChild(a);
 
-        const a = document.createElement('a');
-        a.href = blobUrl;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+//         URL.revokeObjectURL(blobUrl);
 
-        URL.revokeObjectURL(blobUrl);
-
-    } catch (error) {
-        // console.error('Error downloading file:', error)
-    } finally {
-        loading.value = false
-    }
-}
+//     } catch (error) {
+//         // console.error('Error downloading file:', error)
+//     } finally {
+//         loading.value = false
+//     }
+// }
 </script>
 
 
