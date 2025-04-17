@@ -16,14 +16,7 @@ export const useManagerStore = defineStore('manager', {
             this.installedProducts = await window.vmanager.getInstalledProducts();
             this.installedLicenses = await window.guardant.method('getExistingLicenses');
             console.log(this.installedLicenses)
-            // this.installedLicenses = [{
-            //     isBroken: false,
-            //     productNumber: 7,
-            //     featureNumber: 4,
-            //     currentRunCounterValue: 22,
-            //     validFromDate: 11111111,
-            //     validUpToDate: 1111111,
-            // }]
+          
         },
         async initializeStore() {
             const productStore = useProductStore();
