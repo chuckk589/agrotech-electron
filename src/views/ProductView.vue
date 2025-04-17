@@ -72,12 +72,12 @@
                   <div v-for="sys_info in sys_info" :key="sys_info">{{ sys_info }}</div>
                 </div>
                 <div class="at-product-links">
-                  <v-btn variant="text" size="32">
+                  <v-btn variant="text" size="32" @click="openUrl($event, webLink)">
                     <template v-slot:default>
                       <img src="../assets/vk.png">
                     </template>
                   </v-btn>
-                  <v-btn variant="text" size="32">
+                  <v-btn variant="text" size="32" @click="openUrl($event, webLink)">
                     <template v-slot:default>
                       <img src="../assets/telegram.png">
                     </template>
@@ -136,10 +136,13 @@ import ManualCard from '@/components/ManualCard.vue';
 import NewsCard from '@/components/NewsCard.vue';
 import ProductViewHeader from '@/components/ProductViewHeader.vue';
 import ProductViewSlider from '@/components/ProductViewSlider.vue';
+import { webLink } from '@/links';
+import { useOpenUrl } from '@/mixins/openUrl';
 import { useManagerStore } from '@/stores/managerStore';
 import { useNewsStore } from '@/stores/newsStore';
 import { useProductStore } from '@/stores/productStore';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
+const { openUrl } = useOpenUrl();
 const productStore = useProductStore();
 const managerStore = useManagerStore();
 const newsStore = useNewsStore();
@@ -176,14 +179,6 @@ const sys_info = computed(() => {
   return outcome;
 });
 
-// по идее вот эти поля показывают у нас, лицензия с ограничениями или без. 
-// Если все нули, то ограничений нет. 
-// Если есть какие то данные (тут даты в unix timestamp вроде бы), 
-// то лицензия является ограниченной
-// Тут должно быть три поля:
-// 1. Тип лицензии - ограниченная или без ограничений.
-// 2. Дата активации лицензии
-// 3. Дата окончания лицензии, если она с ограничением
 const disableImport = computed(() => {
   return !productStore.hasActiveLicense || !managerStore.isManagerIdle
 });

@@ -9,21 +9,21 @@
           <span class="text-large text-soft-300">Здесь вы найдете ответы на часто задаваемые вопросы по использованию
             приложения</span>
           <div class="at-help__info-card__links text-medium text-disabled-300">
-            <div>
+            <div class="at__fake-link" @click="openUrl($event, webLink)">
               <div v-html="earth"></div>agrotechsim.ru
             </div>
             <div>
               <div v-html="mail"></div>
               hello@agrotechsim.ru
             </div>
-            <div>
+            <div class="at__fake-link" @click="openUrl($event, tgLink)">
               <div v-html="tgline"></div>
               @agrotechsim
             </div>
           </div>
           <div class="at-help__info-card__href text-medium">
-            <a href="#" @click="test">Условия использованию</a>
-            <a href="#">Лицензионное соглашение</a>
+            <a href="#" @click="openUrl($event, termsLink)">Условия использованию</a>
+            <a href="#" @click="openUrl($event, licenseLink)">Лицензионное соглашение</a>
           </div>
         </div>
         <div class="at-help-card">
@@ -75,6 +75,8 @@ import { earth } from "@/assets/svg/earth";
 import { file } from "@/assets/svg/file";
 import { mail } from "@/assets/svg/mail";
 import { tgline } from "@/assets/svg/telegram-line";
+import { licenseLink, termsLink, tgLink, webLink } from "@/links";
+import { useOpenUrl } from "@/mixins/openUrl";
 import { useErrorStore } from "@/stores/errorStore";
 import { useTicketStore } from "@/stores/ticketStore";
 import { EventScope } from "@/utils/errorHandler";
@@ -91,6 +93,8 @@ const rules = {
 }
 const errorStore = useErrorStore();
 const ticketStore = useTicketStore();
+const { openUrl } = useOpenUrl();
+
 const faqs = [
   {
     subject: "Как связаться с поддержкой?",
@@ -105,9 +109,7 @@ const faqs = [
     answer: "Для использования приложения в оффлайн режиме необходимо скачать необходимые данные на устройство"
   }
 ]
-const test = () => {
-  window.shell.openUrl('https://github.com')
-}
+
 const clearFileInput = () => {
   fileInput.value.value = null;
   currentFile.value = null
@@ -256,6 +258,15 @@ const handleFileUpload = (event: any) => {
 
     .at-help__faq-block {
       margin-top: 20px;
+    }
+  }
+
+  .at__fake-link {
+    transition: color 0.3s ease;
+    cursor: pointer;
+
+    &:hover {
+      color: rgb(var(--v-theme-primary-base-dark));
     }
   }
 }
