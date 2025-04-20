@@ -104,10 +104,10 @@ class GuardantCore {
         // const uint32Ptr = koffi.pointer('uint32');
         // const voidPtr = koffi.pointer('void');
         // const stringPtr = koffi.pointer('string');
-        const customerInfo = koffi.struct('CustomerInfo', { FirstName: 'string', LastName: 'string', Email: 'string', CompanyName: 'string', Phone: 'string' })
+        const customerInfo = koffi.pointer(koffi.struct('CustomerInfo', { FirstName: 'string', LastName: 'string', Email: 'string', CompanyName: 'string', Phone: 'string' }))
         const _outUint32Ptr = koffi.out(koffi.pointer('uint32'))
         const _outStringPtr = koffi.out(koffi.pointer('string'));
-        const vendorCodesPtr = koffi.struct('VendorCodes', { PublicCode: 'uint32', PrivateReadCode: 'uint32', PrivateWriteCode: 'uint32' });
+        const vendorCodesPtr = koffi.pointer(koffi.struct('VendorCodes', { PublicCode: 'uint32', PrivateReadCode: 'uint32', PrivateWriteCode: 'uint32' }));
 
         // Register native Guardant functions
         this.GrdGetApiVersion = this.grdlic.func('GrdGetApiVersion', 'uint32', [_outUint32Ptr, _outUint32Ptr]);
