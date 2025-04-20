@@ -1,6 +1,7 @@
-import axios from "axios";
 import { defineStore } from "pinia";
 import { RetrieveNewsDto } from "../../../agrotech-back/shared";
+import { STORE_API } from "../db/constants";
+import { useCacheStore } from "./cacheStore";
 
 
 //@ts-ignore
@@ -26,12 +27,23 @@ export const useNewsStore = defineStore('news', {
             const range = 30; //30 days 
             try {
                 this.loading = true;
-                const news = await axios.get(`${API_URL}/news?limit=${limit}&range=${range}`);
-                this.news = news.data;
+                
+                const url = new URL('/news', API_URL);
+                url.searchParams.append('limit', limit.toString());
+                url.searchParams.append('range', range.toString());
+
+                const cacheStore = useCacheStore();
+
+                const data = await cacheStore.fetchData<RetrieveNewsDto[]>(url.toString(), { loadCache: true, saveCache: true, cacheName: STORE_API, cacheKey: 'news', expirationTime: 60 * 1000 });
+                
+                if (data) {
+                    this.news = data;
+                }
             } catch (error) { } finally {
                 this.loading = false;
             }
         },
+
         async setActiveEntry(id: number) {
             this.currentEntry = this.news.find((item) => item.id == id);
         }

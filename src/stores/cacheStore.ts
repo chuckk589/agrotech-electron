@@ -2,7 +2,7 @@ import axios, { AxiosResponse } from 'axios';
 
 import { defineStore } from 'pinia';
 import { getItem, setItem } from '../db';
-import { STORE_VERSION } from '../db/constants';
+import { STORE_API, STORE_VERSION } from '../db/constants';
 import { ProductCachedMetadata } from '../types';
 
 const LAST_UPDATED_KEY = 'lastUpdated';
@@ -21,9 +21,9 @@ export const useCacheStore = defineStore('cache', {
   actions: {
     async fetchData<T>(
       url: string,
-      options: FetchOptions = { loadCache: false, saveCache: false, cacheName: 'ApiData', cacheKey: 'default', expirationTime: 5 * 60 * 1000 }
+      options: FetchOptions = { loadCache: false, saveCache: false, cacheName: STORE_API, cacheKey: 'default', expirationTime: 5 * 60 * 1000 }
     ): Promise<T | null> {
-
+      
       if (options.loadCache) {
         const cachedData = await this.getCachedData<T>(options.cacheName, options.cacheKey);
         const cacheExpired = await this.isCacheExpired(options.cacheName, options.expirationTime);
