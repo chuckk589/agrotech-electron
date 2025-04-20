@@ -6,7 +6,7 @@
             <div>
                 <div class="at-product-card-version">
                     <div class="text-small text-soft-400">Версия {{ props.displayVersion }}</div>
-                    <!-- <div class="at-chip text-badge">Доступно обновление</div> -->
+                    <div v-if="isExpired" class="at-chip text-badge">Лицензия истекла</div>
                 </div>
                 <div class="at-product-card-desc text-medium">
                     {{ props.description }}
@@ -16,15 +16,15 @@
                 <v-btn @click="switchProduct" class="at-button text-medium">Подробнее</v-btn>
             </div>
             <div class="at-license-info">
-                <div v-if="props.licenseExp">Лицензия до {{ new
-                Date(props.licenseExp * 1000).toLocaleDateString() }}</div>
-                </div>
+                <div v-if="props.licenseExp">{{ licenseDateLabel }}</div>
+            </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
 import { useProductStore } from '@/stores/productStore';
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -38,6 +38,20 @@ const props = defineProps<{
     description: string;
     licenseExp?: number;
 }>();
+
+const isExpired = computed(() => {
+    if (props.licenseExp) {
+        return props.licenseExp < (Date.now() / 1000);
+    }
+    return false;
+});
+
+const licenseDateLabel = computed(() => {
+    if (props.licenseExp) {
+        return `Лицензия до ${new Date(props.licenseExp * 1000).toLocaleDateString()}`;
+    }
+    return '';
+});
 
 const switchProduct = () => {
     productStore.setActiveProduct(props.product_id);

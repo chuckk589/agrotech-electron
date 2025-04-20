@@ -39,7 +39,7 @@ export const useProductStore = defineStore('product', {
         },
         hasActiveLicense(state): boolean {
             if (state.activeProduct) {
-                return state.activeProduct.license?.isBroken == false;
+                return state.activeProduct.license?.isBroken == false && (state.activeProduct.license?.validUpToDate === 0 || state.activeProduct.license?.validUpToDate > (Date.now() / 1000));
             }
             return false;
         },
