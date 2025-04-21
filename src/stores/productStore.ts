@@ -205,6 +205,7 @@ export const useProductStore = defineStore('product', {
             const managerStore = useManagerStore();
             const cacheStore = useCacheStore();
 
+            await managerStore.refreshInstalledProducts();
             const productsMetadata: ProductCachedMetadata[] = await cacheStore.getCachedData(STORE_VERSION, 'products');
 
             return data.map((item) => {
