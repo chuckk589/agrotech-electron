@@ -1,5 +1,4 @@
 import { app, BrowserWindow, dialog, FileFilter, ipcMain, shell } from 'electron';
-import contextMenu from 'electron-context-menu';
 import squirrel from 'electron-squirrel-startup';
 import path, { join } from 'path';
 import { Guardant } from './guardant';
@@ -10,9 +9,9 @@ let mainWindow: BrowserWindow | null = null;
 if (squirrel) {
   app.quit();
 }
-contextMenu({
-  showSaveImageAs: true
-});
+// contextMenu({
+//   showSaveImageAs: true
+// });
 
 const createWindow = () => {
   // Create the browser window.
