@@ -23,7 +23,7 @@ const createWindow = () => {
     minWidth: 1000,
     resizable: true,
     icon: path.join(__dirname, '../../src/assets/icons/app-icon.ico'),
-    // icon: path.join(process.resourcesPath, 'icons', 'app-icon.ico'),
+    // icon: path.join(process.resourcesPath, 'icons', 'app-icon.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: true,
