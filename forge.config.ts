@@ -14,6 +14,7 @@ const config: ForgeConfig = {
     name: 'AgroTechLauncher',
     icon: path.resolve(__dirname, 'src/assets/icons/app-icon'),
     ignore: [/\/\.(?!vite)/], //essential for vite to work
+    executableName: 'agrotech-launcher',
     extraResource: [
       'guardant/',
       path.resolve(__dirname, 'src/assets/icons/')
@@ -22,12 +23,14 @@ const config: ForgeConfig = {
 
   rebuildConfig: {},
   makers: [
-    new MakerSquirrel({}),
+    new MakerSquirrel({
+      setupIcon: path.resolve(__dirname, 'src/assets/icons/app-icon.ico'),
+    }),
     new MakerZIP({}, ['darwin']),
     new MakerRpm({}),
     new MakerDeb({
       options: {
-        icon: path.resolve(__dirname, 'icons', 'app-icon.png')
+        icon: path.resolve(__dirname, 'src/assets/icons/app-icon.png')
       }
     })
   ],
