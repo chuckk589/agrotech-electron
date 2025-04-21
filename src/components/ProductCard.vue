@@ -1,22 +1,22 @@
 <template>
     <div class="at-product-card">
-        <v-img :src="props.displayCard" cover></v-img>
+        <v-img :src="props.product.mainImage" cover></v-img>
         <div class="at-product-card-body d-flex flex-column">
-            <div class="at-product-card__label">{{ props.label }}</div>
+            <div class="at-product-card__label">{{ props.product.label }}</div>
             <div>
                 <div class="at-product-card-version">
-                    <div class="text-small text-soft-400">Версия {{ props.displayVersion }}</div>
+                    <div class="text-small text-soft-400">Версия {{ props.product.lastVersion }}</div>
                     <div v-if="isExpired" class="at-chip text-badge">Лицензия истекла</div>
                 </div>
                 <div class="at-product-card-desc text-medium">
-                    {{ props.description }}
+                    {{ props.product.description }}
                 </div>
             </div>
             <div class="pc-actions">
                 <v-btn @click="switchProduct" class="at-button text-medium">Подробнее</v-btn>
             </div>
             <div class="at-license-info">
-                <div v-if="props.licenseExp">{{ licenseDateLabel }}</div>
+                <div v-if="props.product.license.validUpToDate">{{ licenseDateLabel }}</div>
             </div>
         </div>
     </div>
@@ -24,6 +24,7 @@
 
 <script setup lang="ts">
 import { useProductStore } from '@/stores/productStore';
+import { RetrieveSimulatorPopulated } from '@/types';
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -31,30 +32,27 @@ const router = useRouter();
 const productStore = useProductStore();
 
 const props = defineProps<{
-    product_id: number;
-    label: string;
-    displayVersion: string;
-    displayCard: string;
-    description: string;
-    licenseExp?: number;
+    product: RetrieveSimulatorPopulated;
 }>();
-
 const isExpired = computed(() => {
-    if (props.licenseExp) {
-        return props.licenseExp < (Date.now() / 1000);
+    if (props.product.license.isTrialLicenseExpired) {
+        return true;
+    }
+    if (props.product.license.validUpToDate) {
+        return props.product.license.validUpToDate < (Date.now() / 1000);
     }
     return false;
 });
 
 const licenseDateLabel = computed(() => {
-    if (props.licenseExp) {
-        return `Лицензия до ${new Date(props.licenseExp * 1000).toLocaleDateString()}`;
+    if (props.product.license.validUpToDate) {
+        return `Лицензия до ${new Date(props.product.license.validUpToDate * 1000).toLocaleDateString()}`;
     }
     return '';
 });
 
 const switchProduct = () => {
-    productStore.setActiveProduct(props.product_id);
+    productStore.setActiveProduct(props.product.id);
     router.push({ path: 'product' });
 };
 </script>

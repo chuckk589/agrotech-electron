@@ -4,9 +4,7 @@
       <span>Продукты</span>
     </div>
     <div class="at-my-products-container" v-if="ownedProducts.length">
-      <ProductCard v-for="product in ownedProducts" :key="product.id" :product_id="product.id" :label="product.label"
-        :description="product.description" :license-exp="product.license.validUpToDate"
-        :displayVersion="product.lastVersion" :displayCard="product.mainImage" />
+      <ProductCard v-for="product in ownedProducts" :key="product.id" :product="product" />
     </div>
     <div class="at-code-container" v-else>
       <div class="at-code-card">

@@ -4,9 +4,7 @@
       <span>Продукты</span>
     </div>
     <div class="at-products-container">
-      <ProductCard v-for="product in productStore.products" :key="product.id" :product_id="product.id"
-        :label="product.label" :description="product.description" :displayVersion="product.lastVersion"
-        :displayCard="product.mainImage" />
+      <ProductCard v-for="product in productStore.products" :key="product.id" :product="{ ...product, license: {} as any }" />
     </div>
   </div>
 </template>

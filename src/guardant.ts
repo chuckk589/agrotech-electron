@@ -25,12 +25,14 @@ export class Guardant implements GuardantExposedMethods {
 
     getExistingLicenses(): LicenseEntryMinified[] {
         const licenseInfo = this.grdlicCore.getLicenseInfo('{"dongleModel":  0, "remoteMode": 3}');
-        
+        // fs.writeFileSync('license.json', JSON.stringify(licenseInfo.licenseJson, null, 2));
         return licenseInfo.licenseJson?.licenses.reduce((acc: LicenseEntryMinified[], license: LicenseEntry) => {
             license.licenseInfo.products.forEach((product: Product) => {
                 product.features.forEach((feature: Feature) => {
                     acc.push({
                         isBroken: license.isBroken === 1,
+                        isTrial: license.flagsAsFields.isTrial,
+                        isTrialLicenseExpired: license.flagsAsFields.isTrialLicenseExpired,
                         productNumber: product.number,
                         featureNumber: feature.number,
                         currentRunCounterValue: feature.currentRunCounterValue,
@@ -261,7 +263,7 @@ class GuardantCore {
         }
 
         const status = this.GrdLicenseActivate(serial, "getlicense.guardant.ru", 443, customerInfo, resultPtr);
-        
+
         return { status, licenseId: resultPtr[0] >> 0 };
     }
 

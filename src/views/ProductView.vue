@@ -172,7 +172,7 @@ const sys_info = computed(() => {
       outcome.push(`Дата окончания лицензии: ${new Date(license.validUpToDate * 1000).toLocaleDateString()}`);
     }
 
-    const typeText = license.licenseType === 1 ? 'Без ограничений' : 'С ограничениями';
+    const typeText = license.licenseType !== 1 || license.isTrial ? 'С ограничениями' : 'Без ограничений';
     outcome.push(`Тип лицензии: ${typeText}`);
   }
 
