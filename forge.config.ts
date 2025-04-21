@@ -30,11 +30,13 @@ const config: ForgeConfig = {
   makers: [
     new MakerSquirrel({
       setupIcon: path.resolve(__dirname, 'src/assets/icons/app-icon.ico'),
+      description: 'Лаунчер для продуктов АгроТех',
     }),
     new MakerZIP({}, ['darwin']),
     new MakerRpm({}),
     new MakerDeb({
       options: {
+        description: 'Лаунчер для продуктов АгроТех',
         icon: path.resolve(__dirname, 'src/assets/icons/app-icon.png')
       }
     })

@@ -23,7 +23,6 @@ const createWindow = () => {
     minWidth: 1000,
     resizable: true,
     icon: path.join(__dirname, '../../src/assets/icons/app-icon.ico'),
-    // icon: path.join(process.resourcesPath, 'icons', 'app-icon.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: true,
@@ -74,7 +73,7 @@ app.on('activate', () => {
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
 
-const libPath = app.isPackaged ? join(process.resourcesPath, 'guardant') : join(app.getAppPath(), 'guardant');
+const libPath = app.isPackaged ? process.resourcesPath : join(app.getAppPath(), 'guardant');
 
 const guardant = new Guardant(libPath)
 

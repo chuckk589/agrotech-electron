@@ -15,8 +15,33 @@ export const useManagerStore = defineStore('manager', {
         async refreshInstalledProducts() {
             this.installedProducts = await window.vmanager.getInstalledProducts();
             this.installedLicenses = await window.guardant.method('getExistingLicenses');
-            console.log(this.installedLicenses)
-          
+            // console.log(this.installedLicenses)
+            // this.installedLicenses = [
+            //     {
+            //         "isBroken": false,
+            //         "productNumber": 10,
+            //         "featureNumber": 8,
+            //         "currentRunCounterValue": 0,
+            //         "validFromDate": Date.now() / 1000 - 1000,
+            //         "validUpToDate": Date.now() / 1000,
+            //         "licenseId": -436783429,
+            //         "licenseType": 2,
+            //         "isTrial": false,
+            //         "isTrialLicenseExpired": false
+            //     },
+            //     {
+            //         "isBroken": false,
+            //         "productNumber": 3,
+            //         "featureNumber": 3,
+            //         "currentRunCounterValue": 0,
+            //         "validFromDate": Date.now() ,
+            //         "validUpToDate": 0,
+            //         "licenseId": -436783429,
+            //         "licenseType": 2,
+            //         "isTrial": true,
+            //         "isTrialLicenseExpired": false
+            //     }
+            // ]
         },
         async initializeStore() {
             const productStore = useProductStore();
