@@ -1,7 +1,13 @@
 {
   "version": "1.0.0",
-  "description": "My Electron application description",
   "main": ".vite/build/main.js",
+  "productName": "AgroTech Launcher",
+  "name": "agrotech-launcher",
+  "description": "Лаунчер для продуктов АгроТех",
+  "author": {
+    "name": "chuckk589",
+    "email": "chuckk589@gmail.com"
+  },
   "scripts": {
     "package": "electron-forge package",
     "make": "electron-forge make",
@@ -42,10 +48,7 @@
     "vueperslides": "^3.6.0"
   },
   "keywords": [],
-  "author": {
-    "name": "andrew",
-    "email": "chuckk589@gmail.com"
-  },
+ 
   "license": "MIT",
   "dependencies": {
     "@mdi/font": "^7.4.47",
