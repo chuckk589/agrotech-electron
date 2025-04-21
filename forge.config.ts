@@ -33,13 +33,18 @@ const config: ForgeConfig = {
       description: 'Лаунчер для продуктов АгроТех',
     }),
     new MakerZIP({}, ['darwin']),
-    new MakerRpm({}),
+    new MakerRpm({
+      options: {
+        description: 'Лаунчер для продуктов АгроТех',
+        icon: path.resolve(__dirname, 'src/assets/icons/app-icon.png')
+      }
+    }),
     new MakerDeb({
       options: {
         description: 'Лаунчер для продуктов АгроТех',
         icon: path.resolve(__dirname, 'src/assets/icons/app-icon.png')
       }
-    })
+    }),
   ],
   plugins: [
     new VitePlugin({

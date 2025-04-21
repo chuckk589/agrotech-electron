@@ -2,7 +2,13 @@
 import { defineStore } from 'pinia';
 import { AtEventHandler, EventScope } from '../utils/errorHandler';
 
-
+const titles =  {
+  'error': 'Ошибка',
+  'success': 'Успех',
+  'warning': 'Предупреждение',
+  'info': 'Информация',
+  'debug': 'Отладка',
+}
 export const useErrorStore = defineStore('error', {
   state: () => ({
     alert: {
@@ -18,7 +24,7 @@ export const useErrorStore = defineStore('error', {
     setEvent(scope: EventScope, code: number) {
       const handler = new AtEventHandler(scope, code);
       const type = handler.getType();
-      this.alert.title = type === 'error' ? 'Ошибка' : 'Успех';
+      this.alert.title = titles[type] || 'Ошибка';
       this.alert.message = handler.getMessage();
       this.alert.type = type;
       this.alert.icon = type === 'error' ? '$warning' : '$success';
