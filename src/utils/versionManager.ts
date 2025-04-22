@@ -420,7 +420,7 @@ class VersionManager {
                 this.switchHandlingVersion(options);
 
                 const executablePath = this.getExecutablePath(options);
-                
+
                 fs.chmodSync(executablePath, 0o755);
 
                 child.execFile(executablePath, (error, stdout, stderr) => {
@@ -441,17 +441,19 @@ class VersionManager {
 
         const mainDirectoryFiles = fs.readdirSync(productPath);
 
-        if (mainDirectoryFiles.length !== 1) {
+        if (!mainDirectoryFiles.length) {
             this.throwError(VersionManagerErrorCode.LaunchFailed);
         }
+        //[ 'AgroTechSimDesktop', 'meta.json' ]
+        const mainDirectory = mainDirectoryFiles.find((file) => fs.statSync(path.join(productPath, file)).isDirectory());
 
-        productPath = path.join(productPath, mainDirectoryFiles[0]);
+        productPath = path.join(productPath, mainDirectory);
 
         const files = fs.readdirSync(productPath);
 
         const os = process.platform;
 
-        const executableName = mainDirectoryFiles[0] + (os == 'win32' ? '.exe' : '.sh');
+        const executableName = mainDirectory + (os == 'win32' ? '.exe' : '.sh');
 
 
         if (!files.includes(executableName)) {
