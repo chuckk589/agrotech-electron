@@ -9,7 +9,6 @@ import path from 'path';
 import unzipper from 'unzipper';
 import { ProductDetails, ProductMetaData, VersionManagerEvent, VersionManagerEventHandler, VersionManagerState, VersionManagerStats, VersionState, VersionStats } from '../types';
 import { VersionManagerErrorCode } from './errorHandler';
-
 const PRODUCT_STORE = 'products';
 class VersionManager {
 
@@ -113,8 +112,6 @@ class VersionManager {
         return 0;
     }
     private async getActualFileSize(url: string): Promise<number> {
-        // const response = await axios.head(url);
-        // return parseInt(response.headers['content-length'], 10);
         const _url = new URL(url);
         const size = _url.searchParams.get('fsize');
         if (size) {
@@ -140,9 +137,10 @@ class VersionManager {
     }
     private handleProgress(event: AxiosProgressEvent, sizeBytes: number): void {
         if (event.lengthComputable) {
-            const rate = Math.round((event.loaded / 1024 / 1024) * 100) / 100;
-            const progress = Math.round((event.loaded / sizeBytes) * 1000) / 10;
-            this.emit(VersionManagerEvent.DownloadProgress, { progress, rate });
+            // const rate = Math.round((event.loaded / 1024 / 1024) * 100) / 100;
+            // const progress = Math.round((event.loaded / sizeBytes) * 1000) / 10;
+            const progress = Math.floor((event.loaded / sizeBytes) * 100);
+            this.emit(VersionManagerEvent.DownloadProgress, { progress, rate: 0 });
         }
     }
     private isBusy(): boolean {
@@ -164,14 +162,14 @@ class VersionManager {
 
             this.currentHandlingVersion.url = await this.getDownloadLink(options.fullVersion);
             this.currentHandlingVersion.controller = new AbortController();
-            
+
             //save file size to store
             const sizeBytes = await this.getActualFileSize(this.currentHandlingVersion.url);
-            
+
             this.setStoreProductData({ productName: options.productName, fullVersion: options.fullVersion, sizeBytes });
 
             const existingFileSize = this.getCurrentHandlingVersionLoadedSize();
-
+            console.log(existingFileSize)
             const headers: any = existingFileSize
                 ? { Range: `bytes=${existingFileSize}-` }
                 : {};
@@ -302,7 +300,6 @@ class VersionManager {
 
                 this.removeTempFile(options.fullVersion);
 
-                // const finalPath = path.join(this.basePath, productName, fullVersion);
                 const finalPath = this.getCurrentVersionPath();
                 //FIXME:
                 if (fs.existsSync(finalPath)) {
@@ -387,8 +384,8 @@ class VersionManager {
         }
     }
 
-    async resumeDownload(): Promise<void> {
-        await this.startProductVersionDownload({ productName: this.currentHandlingVersion.productName, fullVersion: this.currentHandlingVersion.fullVersion });
+    async resumeDownload(options: ProductDetails): Promise<void> {
+        await this.startProductVersionDownload(options);
     }
     //TODO: consider using a readExportMetaDataFile
     async getInstalledProducts(): Promise<ProductDetails[]> {
@@ -438,14 +435,24 @@ class VersionManager {
     }
     //FIXME:
     private getExecutablePath(options: ProductDetails): string {
-        const productPath = path.join(this.basePath, options.productName, options.fullVersion, 'AgroTechSimDesktop');
+        let productPath = path.join(this.basePath, options.productName, options.fullVersion);
+
+        const mainDirectoryFiles = fs.readdirSync(productPath);
+
+        if (mainDirectoryFiles.length !== 1) {
+            this.throwError(VersionManagerErrorCode.LaunchFailed);
+        }
+
+        productPath = path.join(productPath, mainDirectoryFiles[0]);
 
         const files = fs.readdirSync(productPath);
 
-        const executable = files.find((file) => file.endsWith('.exe'));
+        const os = process.platform;
+
+        const executable = files.find((file) => file.endsWith(os == 'win32' ? '.exe' : '.sh'));
 
         if (!executable) {
-            throw new Error(`Не найден исполняемый файл в папке ${productPath}`);
+            this.throwError(VersionManagerErrorCode.LaunchFailed);
         }
 
         return path.join(productPath, executable);

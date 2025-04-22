@@ -13,7 +13,7 @@ export const useErrorStore = defineStore('error', {
   state: () => ({
     alert: {
       title: 'Insert your alert title here!',
-      message: 'asdsadddddddddsssssssssssssssssssssssssssssssssssssssssssssssssdddddddddd',
+      message: 'Message',
       type: 'error',
       icon: '$warning'
     },
@@ -36,7 +36,6 @@ export const useErrorStore = defineStore('error', {
     subscribeToErrors() {
       if (window.vmanager) {
         window.vmanager.onError((error) => {
-          console.log(error)
           this.setEvent(EventScope.VersionManager, error);
         })
       }

@@ -41,10 +41,6 @@ export const useCacheStore = defineStore('cache', {
         }
         return response.data;
       } catch (err) {
-        //FIXME: add error handling
-        // const error = err as any;
-        // this.error = error.response?.data?.message || 'Ошибка при запросе данных';
-        console.log(err)
         const cachedData = await this.getCachedData<T>(options.cacheName, options.cacheKey);
         if (cachedData) {
           console.warn('⚠️ Нет интернета, используются кешированные данные');
