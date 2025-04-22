@@ -420,6 +420,8 @@ class VersionManager {
                 this.switchHandlingVersion(options);
 
                 const executablePath = this.getExecutablePath(options);
+                
+                fs.chmodSync(executablePath, 0o755);
 
                 child.execFile(executablePath, (error, stdout, stderr) => {
                     if (error) {
