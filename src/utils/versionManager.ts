@@ -449,13 +449,14 @@ class VersionManager {
 
         const os = process.platform;
 
-        const executable = files.find((file) => file.endsWith(os == 'win32' ? '.exe' : '.sh'));
+        const executableName = mainDirectoryFiles[0] + (os == 'win32' ? '.exe' : '.sh');
 
-        if (!executable) {
+
+        if (!files.includes(executableName)) {
             this.throwError(VersionManagerErrorCode.LaunchFailed);
         }
 
-        return path.join(productPath, executable);
+        return path.join(productPath, executableName);
     }
     private getFolderSize(folderPath: string) {
         let totalSize = 0;
