@@ -72,7 +72,7 @@ app.on('activate', () => {
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
 
-const libPath = app.isPackaged ? process.resourcesPath : join(app.getAppPath(), 'guardant');
+const libPath = app.isPackaged ? join(process.resourcesPath, 'guardant') : join(app.getAppPath(), 'guardant');
 
 const guardant = new Guardant(libPath)
 
