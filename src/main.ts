@@ -108,8 +108,8 @@ safeIpcHandle('pause-download', async () => {
   return versionManager.pauseDownload();
 })
 
-safeIpcHandle('resume-download', async () => {
-  return versionManager.resumeDownload();
+safeIpcHandle('resume-download', async (_, { options }: { options: ProductDetails }) => {
+  return versionManager.resumeDownload(options);
 })
 
 safeIpcHandle('install-product', async (_, { options }: { options: ProductDetails }) => {

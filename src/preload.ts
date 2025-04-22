@@ -13,7 +13,7 @@ contextBridge.exposeInMainWorld('vmanager', {
     startUninstall: (options: ProductDetails) => ipcRenderer.invoke('uninstall-product', { options }),
     cancelDownload: (options: ProductDetails) => ipcRenderer.invoke('cancel-download', { options }),
     pauseDownload: () => ipcRenderer.invoke('pause-download'),
-    resumeDownload: async () => await ipcRenderer.invoke('resume-download'),
+    resumeDownload: async (options: ProductDetails) => await ipcRenderer.invoke('resume-download', { options }),
     exportProduct: async (options: ProductDetails, fullPath: string) => await ipcRenderer.invoke('start-product-export', { options, fullPath }),
     importProduct: async (fullPath: string) => await ipcRenderer.invoke('start-product-import', { fullPath }),
     getInstalledProducts: async () => await ipcRenderer.invoke('get-installed-versions'),
@@ -25,7 +25,7 @@ contextBridge.exposeInMainWorld('filesystem', {
 });
 
 contextBridge.exposeInMainWorld('guardant', {
-    method: async <K extends keyof GuardantExposedMethods>(methodName: K, ...args: Parameters<GuardantExposedMethods[K]>) =>  await ipcRenderer.invoke('guardant', { options: { methodName, args } }),
+    method: async <K extends keyof GuardantExposedMethods>(methodName: K, ...args: Parameters<GuardantExposedMethods[K]>) => await ipcRenderer.invoke('guardant', { options: { methodName, args } }),
 });
 
 contextBridge.exposeInMainWorld('shell', {

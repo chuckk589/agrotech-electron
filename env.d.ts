@@ -24,7 +24,7 @@ interface Window {
     startUninstall: (options: ProductDetails) => Promise<void>;
     cancelDownload: (options: ProductDetails) => Promise<void>;
     pauseDownload: () => Promise<void>;
-    resumeDownload: () => Promise<void>;
+    resumeDownload: (options: ProductDetails) => Promise<void>;
     exportProduct: (options: ProductDetails, fullPath: string) => Promise<void>;
     importProduct: (fullPath: string) => Promise<void>;
     getInstalledProducts: () => Promise<ProductDetails[]>;

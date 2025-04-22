@@ -17,7 +17,7 @@ export const useProductStore = defineStore('product', {
         versions: [] as RetrieveVersionDto[],
         activeVersion: {} as RetrieveVersionDto,
         latestVersion: {} as RetrieveVersionDto,
-        versionMeta: { state: VersionState.NotInstalled, progress: 0, downloadRate: 0 },
+        versionMeta: { state: VersionState.NotInstalled, progress: 0, cachedProgress: 0, downloadRate: 0 },
     }),
     getters: {
         isInstalled(state) {
@@ -68,7 +68,9 @@ export const useProductStore = defineStore('product', {
     actions: {
         async initializeStore() {
             window.vmanager.on(VersionManagerEvent.DownloadProgress, (progressDetails: { progress: number, rate: number }) => {
-                this.versionMeta.progress = progressDetails.progress;
+                console.log(progressDetails)
+                const newProgress = this.versionMeta.cachedProgress + progressDetails.progress;
+                this.versionMeta.progress = newProgress > 100 ? 100 : newProgress;
                 this.versionMeta.downloadRate = progressDetails.rate
             });
             window.vmanager.on(VersionManagerEvent.UnpackingProgress, (progress: number) => {
@@ -106,6 +108,7 @@ export const useProductStore = defineStore('product', {
             const metaData: VersionStats = await window.vmanager.getVersionState({ productName: this.activeProduct.label, fullVersion: this.activeVersion.fullName })
             this.versionMeta.progress = metaData.progress;
             this.versionMeta.state = metaData.state;
+            this.versionMeta.cachedProgress = metaData.progress;
         },
         //STATES
         async startExport(selectedPath: string) {
@@ -138,7 +141,7 @@ export const useProductStore = defineStore('product', {
         },
         async resumeDownload() {
             this.loading = true;
-            await window.vmanager.resumeDownload();
+            await window.vmanager.resumeDownload({ productName: this.activeProduct.label, fullVersion: this.activeVersion.fullName });
             this.loading = false;
         },
         async cancelDownload() {
