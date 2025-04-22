@@ -16,32 +16,32 @@ export const useManagerStore = defineStore('manager', {
             this.installedProducts = await window.vmanager.getInstalledProducts();
             this.installedLicenses = await window.guardant.method('getExistingLicenses');
             // console.log(this.installedLicenses)
-            this.installedLicenses = [
-                {
-                    "isBroken": false,
-                    "productNumber": 10,
-                    "featureNumber": 8,
-                    "currentRunCounterValue": 0,
-                    "validFromDate": 0,
-                    "validUpToDate": 0,
-                    "licenseId": -436783429,
-                    "licenseType": 1,
-                    "isTrial": false,
-                    "isTrialLicenseExpired": false
-                },
-                // {
-                //     "isBroken": false,
-                //     "productNumber": 3,
-                //     "featureNumber": 3,
-                //     "currentRunCounterValue": 0,
-                //     "validFromDate": Date.now() ,
-                //     "validUpToDate": 0,
-                //     "licenseId": -436783429,
-                //     "licenseType": 2,
-                //     "isTrial": true,
-                //     "isTrialLicenseExpired": false
-                // }
-            ]
+            // this.installedLicenses = [
+            //     {
+            //         "isBroken": false,
+            //         "productNumber": 10,
+            //         "featureNumber": 8,
+            //         "currentRunCounterValue": 0,
+            //         "validFromDate": 0,
+            //         "validUpToDate": 0,
+            //         "licenseId": -436783429,
+            //         "licenseType": 1,
+            //         "isTrial": false,
+            //         "isTrialLicenseExpired": false
+            //     },
+            //     {
+            //         "isBroken": false,
+            //         "productNumber": 3,
+            //         "featureNumber": 3,
+            //         "currentRunCounterValue": 0,
+            //         "validFromDate": Date.now() ,
+            //         "validUpToDate": 0,
+            //         "licenseId": -436783429,
+            //         "licenseType": 2,
+            //         "isTrial": true,
+            //         "isTrialLicenseExpired": false
+            //     }
+            // ]
         },
         async initializeStore() {
             const productStore = useProductStore();
