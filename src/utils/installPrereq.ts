@@ -9,7 +9,7 @@ async function installPrerequsites() {
   if(process.platform !== 'linux')  return;
 
   const INSTALL_DIR = '/opt/guardant/grdcontrol';
-  const DOWNLOAD_URL = 'https://download.guardant.ru/Guardant_Control_Center/4.3.0/grdcontrol-4.3.0.tar.gz';
+  const DOWNLOAD_URL = 'https://download.guardant.ru/Guardant_Control_Center/3.29/grdcontrol-3.29.tar.gz';
   const TEMP_DIR = path.join(app.getPath('userData'), 'temp', 'gcc');
 
   // 1. Проверка установки
