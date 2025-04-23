@@ -55,6 +55,8 @@ export class Guardant implements GuardantExposedMethods {
         const response = this.grdlicCore.licenseActivate(serial);
         return response;
     }
+
+    // https://download.guardant.ru/Guardant_Control_Center/4.3.0/grdcontrol-4.3.0.tar.gz
 }
 
 
