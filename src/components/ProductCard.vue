@@ -16,7 +16,7 @@
                 <v-btn @click="switchProduct" class="at-button text-medium">Подробнее</v-btn>
             </div>
             <div class="at-license-info">
-                <div v-if="guardant.expDate">{{ licenseDateLabel }}</div>
+                <div v-if="guardant.expDate.value">{{ licenseDateLabel }}</div>
             </div>
         </div>
     </div>
