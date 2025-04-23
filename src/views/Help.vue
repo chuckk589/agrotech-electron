@@ -76,7 +76,7 @@ import { file } from "@/assets/svg/file";
 import { mail } from "@/assets/svg/mail";
 import { tgline } from "@/assets/svg/telegram-line";
 import { licenseLink, termsLink, tgLink, webLink } from "@/links";
-import { useOpenUrl } from "@/mixins/openUrl";
+import { useOpenUrl } from "@/mixins/openUrl.mixin";
 import { useErrorStore } from "@/stores/errorStore";
 import { useTicketStore } from "@/stores/ticketStore";
 import { EventScope } from "@/utils/errorHandler";

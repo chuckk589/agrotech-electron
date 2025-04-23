@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import { useOpenUrl } from '@/mixins/openUrl';
+import { useOpenUrl } from '@/mixins/openUrl.mixin';
 import { ref } from 'vue';
 import { RetrieveManualDto } from '../../../agrotech-back/shared';
 const loading = ref(false)

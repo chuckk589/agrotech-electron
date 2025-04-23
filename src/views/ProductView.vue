@@ -137,7 +137,8 @@ import NewsCard from '@/components/NewsCard.vue';
 import ProductViewHeader from '@/components/ProductViewHeader.vue';
 import ProductViewSlider from '@/components/ProductViewSlider.vue';
 import { webLink } from '@/links';
-import { useOpenUrl } from '@/mixins/openUrl';
+import { useGuardant } from '@/mixins/guardant.mixin';
+import { useOpenUrl } from '@/mixins/openUrl.mixin';
 import { useManagerStore } from '@/stores/managerStore';
 import { useNewsStore } from '@/stores/newsStore';
 import { useProductStore } from '@/stores/productStore';
@@ -153,6 +154,7 @@ const showUpdateAlert = ref(true);
 
 const openedMenu = ref(false);
 //computed
+const guardant = useGuardant(productStore.activeProduct);
 const sys_info = computed(() => {
   const product = productStore.activeProduct;
   const version = productStore.activeVersion;
@@ -168,11 +170,11 @@ const sys_info = computed(() => {
       outcome.push(`Дата активации лицензии: ${new Date(license.activationDate).toLocaleDateString()}`);
     }
 
-    if (license.validUpToDate && license.validUpToDate !== 0) {
-      outcome.push(`Дата окончания лицензии: ${new Date(license.validUpToDate * 1000).toLocaleDateString()}`);
+    if (guardant.expDate.value) {
+      outcome.push(`Дата окончания лицензии: ${new Date(guardant.expDate.value * 1000).toLocaleDateString()}`);
     }
 
-    const typeText = license.licenseType !== 1 || license.isTrial ? 'С ограничениями' : 'Без ограничений';
+    const typeText = guardant.isLimitedVersion.value ? 'С ограничениями' : 'Без ограничений';
     outcome.push(`Тип лицензии: ${typeText}`);
   }
 
