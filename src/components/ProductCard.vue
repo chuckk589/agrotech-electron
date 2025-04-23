@@ -16,24 +16,28 @@
                 <v-btn @click="switchProduct" class="at-button text-medium">Подробнее</v-btn>
             </div>
             <div class="at-license-info">
-                <div v-if="props.product.license.validUpToDate">{{ licenseDateLabel }}</div>
+                <div v-if="guardant.expDate">{{ licenseDateLabel }}</div>
             </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
+import { useGuardant } from '@/mixins/guardant.mixin';
 import { useProductStore } from '@/stores/productStore';
 import { RetrieveSimulatorPopulated } from '@/types';
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 
-const router = useRouter();
-const productStore = useProductStore();
 
 const props = defineProps<{
     product: RetrieveSimulatorPopulated;
 }>();
+
+const router = useRouter();
+const productStore = useProductStore();
+const guardant = useGuardant(props.product);
+
 const isExpired = computed(() => {
     if (props.product.license.isTrialLicenseExpired) {
         return true;
@@ -45,8 +49,8 @@ const isExpired = computed(() => {
 });
 
 const licenseDateLabel = computed(() => {
-    if (props.product.license.validUpToDate) {
-        return `Лицензия до ${new Date(props.product.license.validUpToDate * 1000).toLocaleDateString()}`;
+    if (guardant.expDate.value) {
+        return `Лицензия до ${new Date(guardant.expDate.value * 1000).toLocaleDateString()}`;
     }
     return '';
 });

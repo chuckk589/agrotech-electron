@@ -170,6 +170,7 @@ export interface LicenseEntryMinified {
   currentRunCounterValue: number;
   validFromDate: number;
   validUpToDate: number;
+  containerDeathTime: number;
   isTrial: boolean;
   isTrialLicenseExpired: boolean;
   // restOfLifeTime: number;

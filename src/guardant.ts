@@ -35,6 +35,7 @@ export class Guardant implements GuardantExposedMethods {
                         isTrialLicenseExpired: license.flagsAsFields.isTrialLicenseExpired,
                         productNumber: product.number,
                         featureNumber: feature.number,
+                        containerDeathTime: license.dongleInfo.containerDeathTime,
                         currentRunCounterValue: feature.currentRunCounterValue,
                         validFromDate: feature.validFromDate,
                         validUpToDate: feature.validUpToDate,
