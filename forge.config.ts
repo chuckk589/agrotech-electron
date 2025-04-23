@@ -6,10 +6,8 @@ import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { VitePlugin } from '@electron-forge/plugin-vite';
 import type { ForgeConfig } from '@electron-forge/shared-types';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
-import os from 'os';
 import path from 'path';
 
-const isLinux = os.platform() === 'linux';
 
 const config: ForgeConfig = {
   packagerConfig: {
@@ -19,9 +17,7 @@ const config: ForgeConfig = {
     ignore: [/\/\.(?!vite)/], //essential for vite to work
     executableName: 'agrotech-launcher',
     extraResource: [
-      isLinux
-        ? path.resolve(__dirname, 'guardant/libgrdlic.so')
-        : path.resolve(__dirname, 'guardant/grdlic.dll'),
+      'guardant/',
       path.resolve(__dirname, 'src/assets/icons/')
     ]
   },
