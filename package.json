@@ -48,7 +48,6 @@
     "vueperslides": "^3.6.0"
   },
   "keywords": [],
- 
   "license": "MIT",
   "dependencies": {
     "@mdi/font": "^7.4.47",
@@ -59,6 +58,7 @@
     "koffi": "^2.11.0",
     "lodash": "^4.17.21",
     "pinia": "^2.1.7",
+    "tar": "^7.4.3",
     "unzipper": "^0.12.3",
     "vue": "^3.4.31",
     "vue-router": "^4.4.0",

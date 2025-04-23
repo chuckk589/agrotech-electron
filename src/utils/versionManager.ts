@@ -169,7 +169,7 @@ class VersionManager {
             this.setStoreProductData({ productName: options.productName, fullVersion: options.fullVersion, sizeBytes });
 
             const existingFileSize = this.getCurrentHandlingVersionLoadedSize();
-            console.log(existingFileSize)
+            
             const headers: any = existingFileSize
                 ? { Range: `bytes=${existingFileSize}-` }
                 : {};

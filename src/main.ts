@@ -3,6 +3,7 @@ import squirrel from 'electron-squirrel-startup';
 import path, { join } from 'path';
 import { Guardant } from './guardant';
 import { ProductDetails, VersionManagerEvent, VersionManagerEventHandler } from './types';
+import installPrerequsites from './utils/installPrereq';
 import VersionManager from './utils/versionManager';
 let mainWindow: BrowserWindow | null = null;
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -42,7 +43,7 @@ const createWindow = () => {
     mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
   }
   mainWindow.show()
-
+  installPrerequsites().catch(console.error);
 };
 
 // This method will be called when Electron has finished
@@ -75,6 +76,8 @@ app.on('activate', () => {
 const libPath = app.isPackaged ? join(process.resourcesPath, 'guardant') : join(app.getAppPath(), 'guardant');
 
 const guardant = new Guardant(libPath)
+
+
 
 safeIpcHandle('guardant', async <K extends keyof GuardantExposedMethods>(_, { options }: { options: { methodName: K, args: Parameters<GuardantExposedMethods[K]> } }) => {
   return (guardant[options.methodName] as any)(...options.args)
