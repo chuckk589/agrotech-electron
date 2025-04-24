@@ -1,6 +1,7 @@
 ## Prerequisites
 - Node.js 20+
 - yarn / npm
+- Python 3.8+ (for `node-gyp`)
 
 ## Build
 1. Clone the repo
