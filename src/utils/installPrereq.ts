@@ -12,14 +12,12 @@ async function installPrerequsites() {
   const DOWNLOAD_URL = 'https://download.guardant.ru/Guardant_Control_Center/3.29/grdcontrol-3.29.tar.gz';
   const TEMP_DIR = path.join(app.getPath('userData'), 'temp', 'gcc');
 
-  // 1. Проверка установки
   const isInstalled = fs.existsSync(INSTALL_DIR);
   if (isInstalled) {
     console.log('Guardant уже установлен');
     return;
   }
 
-  // 2. Скачать архив
   if (!fs.existsSync(TEMP_DIR)) {
     fs.mkdirSync(TEMP_DIR, { recursive: true })
   }
@@ -28,7 +26,6 @@ async function installPrerequsites() {
 
   await downloadFile(DOWNLOAD_URL, archivePath);
 
-  // 3. Распаковать архив
   console.log('Распаковка...');
   await tar.x({ file: archivePath, cwd: TEMP_DIR, });
 
@@ -41,10 +38,8 @@ async function installPrerequsites() {
     throw new Error('Установочный скрипт не найден');
   }
 
-  // 5. Сделать скрипт исполняемым
   fs.chmodSync(installScript, 0o755);
 
-  // 6. Запустить скрипт (с sudo)
   console.log('Установка...');
   const child = spawn('pkexec', [installScript], {
     stdio: 'inherit'
