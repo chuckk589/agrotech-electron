@@ -20,8 +20,14 @@
    yarn
    yarn package --platform=linux
    yarn package --platform=win32
+   yarn package --platform=darwin # not tested yet
    ```
+   
 4. Run postinstall script (cuts unused locales, etc.)
    ```sh
    yarn postpackage
+   ```
+### If you want executables 
+   ```sh
+   yarn make
    ```
